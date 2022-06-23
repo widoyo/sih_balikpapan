@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="/pos">Pos</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Tambah Pos</li>
+        </ol>
+      </nav>
+      <h1>Tambah Pos</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-6">
+      <form action="." method="POST">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+          <label for="nama" class="form-label">{{ form.nama.label }}</label>
+          <input type="text" name="nama" id="nama" class="form-control" aria-describedby="nama-help">
+          <div id="nama-help" class="form-text"></div>
+        </div>
+      <div class="mb-3">
+        {{ form.tipe.label(class="form-label") }}
+        {{form.tipe(class='form-select')}}
+      </div>
+      <input class="btn btn-primary" type="submit" value="Tambahkan">
+      </form>      
+    </div>  
+  </div>
+</div>
+{% endblock %}

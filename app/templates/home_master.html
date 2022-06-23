@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body"><i class="bi bi-bank2 float-end fs-1"></i>
+          <h5 class="card-title">Tenant</h5>
+          <h6 class="card-subtitle mb-2 text-muted">Lembaga pengguna prinus</h6>
+          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+          <a href="/tenant" class="card-link">Seluruh Tenant</a>
+          <a href="/tenant/add" class="card-link">Tambah Tenant</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body"><i class="bi bi-people-fill float-end fs-1"></i>
+          <h5 class="card-title">User</h5>
+          <h6 class="card-subtitle mb-2 text-muted">Semua User yang dapat mengakses sistem prinus</h6>
+          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+          <a href="/user" class="card-link">Seluruh User</a>
+          <a href="/user/add" class="card-link">Tambah User</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

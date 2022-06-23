@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Logger</li>
+        </ol>
+      </nav>
+      <h1>Logger <span class="fw-lighter">({{ loggers|length }})</span></h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-8">
+<table class="table">
+<thead>
+
+</thead>
+<tbody>
+  {% for l in loggers %}
+  <tr>
+    <td><a href="{{l.sn}}">{{ l.sn }}</a></td>
+    <td>{{ l.location.nama }}</td>
+    <td>{{ l.tenant.nama }}</td>
+  </tr>
+  {% else %}
+  <tr>
+    <td>Kosong</td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+    </div>
+    <div class="col-sm-4">
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block js_foot %}
+  <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
+  <script>
+    const table = new simpleDatatables.DataTable("table")
+  </script>
+{% endblock %}

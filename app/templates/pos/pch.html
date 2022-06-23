@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Pos Curah Hujan</li>
+        </ol>
+      </nav>
+      <h1>Pos Curah Hujan <span class="fw-lighter">({{ poses|length }})</span><a href="../add?tipe=1" class="ms-5 btn btn-outline-secondary btn-sm">Tambah</a></h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
+<table class="table">
+  <thead>
+    <tr>
+      <th>No</th>
+      <th>Nama</th>
+      <th class="small">07:01 - 13:00</th>
+      <th class="small">13:01 - 19:00</th>
+      <th class="small">19:01 - 01:00</th>
+      <th class="small">01:01 - 07:00</th>
+      <th>Total Telemetri</th>
+      <th>Manual</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in poses %}
+    <tr>
+      <td></td>
+      <td><a href="/pos/{{p.id}}-{{p.nama}}">{{ p.nama }}</a></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+    </div>
+  </div>
+  
+</div>
+{% endblock %}

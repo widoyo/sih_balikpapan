@@ -1,0 +1,178 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <script src="/cdn-cgi/apps/head/_EkhrCghg0CvlqcWicHOP7oHiJQ.js"></script><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <title>Display</title>
+    <style>
+      .go-up {
+        display: inline-block;
+      }
+      .go-down {
+        display: inline-block;
+        transform: rotate(180deg);
+      }
+
+      .bullet {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body class="bg-dark text-light">
+    <div class="container-fluid">
+      <div class="row py-2">
+        <div class="col fs-3 fw-bold">Curah Hujan <span class="fw-light">&amp; Muka Air Sungai</span></div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6"></div>
+        <div class="col-sm-6 fw-bold">
+          <div class="row">
+            <div class="col-sm-6 text-end fw-bold" style="font-size: 7em;">
+              <p style="letter-spacing: 0.6rem;"><span id="jam">10</span><span class="fw-light"><span id="tick">:</span><span id="menit">32</span></span></p>
+            </div>
+            <div class="col-sm-1 d-flex" style="height:150px;"><div class="vr"></div></div>
+            <div class="col-sm-5 align-self-center">
+              <p class="display-6" style="letter-spacing: .3rem" id="tgl">14 Maret<br>2022</p>
+            </div>
+          </div>  
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">
+          <p class="fs-4 text-muted" style="letter-spacing:0.5rem">Hujan<span class="bg-success px-5 ms-2">&nbsp;</span></p>
+          <div class="row">
+            <div class="col-6">
+              <div class="progress" style="height: 2px">
+                <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%;"
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+              </div>
+            <div class="col-6"></div>
+          </div>
+          <table class="mt-5 text-light fs-3">
+            
+            <tr>
+              <td class="py-3 pe-3">
+                <span class="bullet bg-success text-center fs-4 me-2 align-self-center">1</span>Rahwatu <span class="badge rounded-pill bg-secondary">+690</span>
+              </td>
+              <td class="text-end">0 mm</td>
+            </tr>
+            
+            <tr>
+              <td class="py-3 pe-3">
+                <span class="bullet bg-success text-center fs-4 me-2 align-self-center">2</span>Tanjung Rejo <span class="badge rounded-pill bg-secondary">+56</span>
+              </td>
+              <td class="text-end">0 mm</td>
+            </tr>
+            
+            <tr>
+              <td class="py-3 pe-3">
+                <span class="bullet bg-success text-center fs-4 me-2 align-self-center">3</span>Wd. Gembong <span class="badge rounded-pill bg-secondary">+188</span>
+              </td>
+              <td class="text-end">0 mm</td>
+            </tr>
+            
+            </table>
+          </div>
+        <div class="col-sm-6">
+          <p class="fs-4 text-muted" style="letter-spacing: 0.5rem;">Tinggi Muka Air<span class="bg-danger px-5 ms-2">&nbsp;</span></p>
+          <div class="row">
+            <div class="col-6">
+              <div class="progress" style="height: 2px">
+                <div class="progress-bar  bg-success" role="progressbar" style="width: 25%;"
+                    aria-valuenow="25" aria-valuemin="0" aria-valuemax="5"></div>
+            </div>
+              </div>
+            <div class="col-6"></div>
+          </div>
+          <table class="mt-5 text-light fs-3">
+            
+              <tr>
+                <td class="py-3 pe-3"><span class="bullet bg-danger fs-4 text-center me-2 align-self-center">1</span>PDA Bd. Logung <span class="badge rounded-pill bg-secondary">+25</span></td>
+                <td class="text-end">+28 <i class="bi bi-triangle-fill text-success go-down"></i></td>
+                <td class="text-end">/ +34.2</td>
+              </tr>
+            
+              <tr>
+                <td class="py-3 pe-3"><span class="bullet bg-danger fs-4 text-center me-2 align-self-center">2</span>PDA Jembatan Tanggul Angin <span class="badge rounded-pill bg-secondary">+8</span></td>
+                <td class="text-end">+11 <i class="bi bi-triangle-fill text-success go-down"></i></td>
+                <td class="text-end">/ +17.2</td>
+              </tr>
+            
+              <tr>
+                <td class="py-3 pe-3"><span class="bullet bg-danger fs-4 text-center me-2 align-self-center">3</span>Juana Tanjang <span class="badge rounded-pill bg-secondary">+3</span></td>
+                <td class="text-end">+6 <i class="bi bi-triangle-fill text-success go-down"></i></td>
+                <td class="text-end">/ +12.2</td>
+              </tr>
+            
+              <tr>
+                <td class="py-3 pe-3"><span class="bullet bg-danger fs-4 text-center me-2 align-self-center">4</span>Bd. Wilalung <span class="badge rounded-pill bg-secondary">+9</span></td>
+                <td class="text-end">+12 <i class="bi bi-triangle-fill text-success go-down"></i></td>
+                <td class="text-end">/ +18.2</td>
+              </tr>
+            
+            </table>
+        </div>
+      </div>
+    </div>
+<!-- Explanation -->
+
+    <!-- Optional JavaScript; choose one of the two! -->
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="/static/js/dayjs.min.js"></script>
+    <script src="/static/js/id.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        
+        function ticker() {
+          dayjs.locale('id');
+          let now = dayjs();
+        
+          document.getElementById('jam').innerHTML = now.format("HH");
+          document.getElementById('menit').innerHTML = now.format('mm');
+          document.getElementById('tgl').innerHTML = now.format('DD MMMM[<br>]YYYY');
+          let tick = document.getElementById('tick');
+          if (tick.style.color == 'rgb(255, 255, 255)') {
+            tick.style.color = '#666';
+          } else {
+            tick.style.color = '#fff';
+          }
+          setTimeout(ticker, 1000);
+        }
+
+        ticker();
+        function pg_down(step) {
+          step = step - 1;
+          if (step > 0) {
+            setTimeout(function () { pg_down(step); }, 1000);
+          }
+
+          
+        }
+        function update() {
+          console.log('update: ', dayjs().unix());
+          pg_down(5);
+          setTimeout(update, (_lima - 30) * 1000);
+        }
+        // Uji coba
+        const _lima = 60;
+        let t = dayjs().unix();
+        console.log('t: ', t);
+        console.log('t % 300: ', t % _lima);
+        let nt = t + (_lima - (t % _lima));
+        console.log('nt: ', nt);
+        setTimeout(update, (_lima - (t % _lima)) * 1000);
+      });
+    </script>
+  </body>
+</html>

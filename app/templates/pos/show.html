@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <nav aria-label="breadcrumb" class="d-none d-md-block">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="/pos">Pos Pengamatan</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ pos.nama }}</li>
+        </ol>
+      </nav>
+      <h1><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span>{{ pos.nama }} <span class="fs-6 badge bg-{{pos.str_tipe()[1]}} rounded-pill">{{ pos.str_tipe()[0] }}</span></h1>
+
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-8">
+      {% if pos.tipe == '1' %}
+      <canvas id="chart_hujan_hari"></canvas>
+      {% elif pos.tipe == '2' %}
+      Chart PDA
+      {% else %}
+      Chart Klimato
+      {% endif %}
+    </div>
+    <div class="col-sm-4">
+      <h2>Tentang Lokasi ini</h2>
+      desa 
+      kecamatan 
+      kab 
+      <h2>Petugas</h2>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block js_foot %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+  ];
+
+  const data = {
+    labels: labels,
+    datasets: [{
+      label: 'My First dataset',
+      backgroundColor: 'rgb(255, 99, 132)',
+      borderColor: 'rgb(255, 99, 132)',
+      data: [0, 10, 5, 2, 20, 30, 45],
+    }]
+  };
+
+  const config = {
+    type: 'line',
+    data: data,
+    options: {}
+  };
+  const myChart = new Chart(
+    document.getElementById('chart_hujan_hari'),
+    config
+  )
+</script>
+
+{% endblock %}

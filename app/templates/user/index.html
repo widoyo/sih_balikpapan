@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">User</li>
+        </ol>
+      </nav>
+      <h1>User  <span class="fw-lighter">({{ users|length }})</span><a href="add" class="ms-5 btn btn-outline-secondary btn-sm">Tambah</a></h1> 
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            {% if not current_user.tenant %}
+            <th>Tenant</th>
+            {% endif %}
+            <th>Timezone</th>
+            <th>Last Login</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.username }}</td>
+            {% if not current_user.tenant %}
+            <td>{{ u.tenant.nama }}</td>
+            {% endif %}
+            <td>{{ u.tz }}</td>
+            <td>{{ u.last_login }}</td>
+          </tr>
+          {% endfor %}  
+        </tbody>
+        </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

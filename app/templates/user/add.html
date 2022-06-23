@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="/user">User</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Tambah</li>
+        </ol>
+      </nav>
+      <h1>Tambah User</h1>
+      </div>
+      </div>
+  <div class="row">
+    <div class="col-sm-6">
+      <form action="/user" method="POST">
+      {% for f in form %}
+      <li>{{ f.label }} {{f}}</li>
+      {% endfor %}
+      </form>
+    </div>
+  </div>
+      </div>
+{% endblock %}

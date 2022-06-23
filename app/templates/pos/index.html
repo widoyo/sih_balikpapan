@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Pos Pengamatan</li>
+        </ol>
+      </nav>
+      <h1>Pos  <span class="fw-lighter">({{ poses|length }})</span><a href="add/" class="ms-5 btn btn-outline-secondary btn-sm">Tambah</a></h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-8">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Pos</th>
+            <th>Banyak Data</th>
+            <th>Data Terbaru</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in poses %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td><span class="badge {% if p.tipe == '1' %}bg-primary{% elif p.tipe == '2' %}bg-danger{% endif %}">{% if p.tipe == '1' %}PCH{% elif p.tipe == '2' %}PDA{% endif %}</span> <a href="/pos/{{ p.id }}-{{ p.nama }}">{{ p.nama }}</a></td>
+            <td></td>
+            <td><a href="/pos/{{ p.id }}-{{ p.nama }}/edit">Edit</a></td>
+          </tr>
+          
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="col-sm-4"></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Tenant</li>
+        </ol>
+      </nav>
+      <h1>Tenant  <span class="fw-lighter">({{ tenants|length }})</span><a href="add" class="ms-5 btn btn-outline-secondary btn-sm">Tambah</a></h1>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nama</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tenants %}
+          <tr>
+            <td>{{ t.nama }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
