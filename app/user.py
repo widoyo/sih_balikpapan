@@ -3,7 +3,7 @@ from flask import Blueprint, request, render_template, redirect, flash, url_for
 from flask_login import current_user, login_required
 from playhouse.flask_utils import get_object_or_404
 from .models import Location, User
-from .forms import PosForm, UserForm
+from .forms import PosForm, UserForm, PasswordForm
 
 bp = Blueprint('user', __name__)
 
@@ -12,6 +12,13 @@ bp = Blueprint('user', __name__)
 def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
+
+
+@bp.route('/<username>/password', methods=['GET', 'POST'])
+@login_required
+def set_password(username):
+    user = User.select().where(User.username==username)
+    return render_template('/user/set_password.html', user=user)
 
 
 @bp.route('/add', methods=['POST', 'GET'])
@@ -28,8 +35,10 @@ def add():
     else:
         if current_user.tenant:
             form = UserForm(tenant=current_user.tenant)
+            form.location.choices = [(l.id, l.nama) for l in Location.select().where(Location.tenant==current_user.tenant)]
         else:
             form = UserForm()
+            form.location.choices=[(l.id, l.nama) for l in Location.select()]
     return render_template('user/add.html', form=form)
 
 @bp.route('/')

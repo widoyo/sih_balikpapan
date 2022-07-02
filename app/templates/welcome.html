@@ -26,13 +26,25 @@
     </style>
   </head>
   <body>
+    <div class="container-fluid mb-4 border-bottom">
+      <div class="row">
+        <div class="col">
+          <div class="container">
+            <div class="row">
+              <div class="col">
+                <img src="/static/img/prinus.png" alt="prinus" class="mb-3" style="width:30px;"><span class="ms-3 fs-2">prinus</span>
+              </div>
+            </div>
+          </div>
+          </div>
+      </div>
+    </div>
 <div class="container">
   <div class="row">
     <div class="col-sm-6">
-      <p>Hujan di seluruh Indonesia</p>
     </div>
     <div class="col-sm-6">
-      <p>TMA?</p>
+      <h3>Log in ke prinus</h3>
       <form method="POST" action="/login" class="p-4 p-md-5 border rounded-3 bg-light">
         {{ form.hidden_tag() }}
         <div class="form-floating mb-3">

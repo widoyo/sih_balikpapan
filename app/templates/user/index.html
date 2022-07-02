@@ -16,9 +16,10 @@
             <th>Username</th>
             {% if not current_user.tenant %}
             <th>Tenant</th>
-            {% endif %}
             <th>Timezone</th>
-            <th>Last Login</th>
+            {% endif %}
+            <th>Last Seen</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -27,9 +28,10 @@
             <td>{{ u.username }}</td>
             {% if not current_user.tenant %}
             <td>{{ u.tenant.nama }}</td>
-            {% endif %}
             <td>{{ u.tz }}</td>
-            <td>{{ u.last_login }}</td>
+            {% endif %}
+            <td>{{ u.last_seen }}</td>
+            <td><a href="{{ url_for('user.set_password', username=u.username) }}">Atur Password</a></td>
           </tr>
           {% endfor %}  
         </tbody>

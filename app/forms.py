@@ -4,11 +4,16 @@ from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 
 from .models import TIPE_POS
 
+class PasswordForm(FlaskForm):
+    username = StringField()
+    new_password = StringField()
+    
+    
 class UserForm(FlaskForm):
     username = StringField()
     password = PasswordField()
     is_petugas = BooleanField()
-    lokasi = SelectField()
+    location = SelectField()
     tenant = HiddenField()
     
 
@@ -24,7 +29,6 @@ class TenantForm(FlaskForm):
     
     
 class LoggerForm(FlaskForm):
-    sn = StringField()
-    tipe = SelectField(TIPE_POS)
+    location = SelectField()
     
     

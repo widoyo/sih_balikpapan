@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col mb-5">
+      <a href=""><i class="bi fs-3 bi-arrow-left me-4"></i></a><h2>{{ pos.nama }}
+      </h2>
+      <span class="small">Desa</span>
+      <div class="btn-group float-end" role="group">
+        <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>
+        <a href="{{ url_for('pos.show', id=pos.id) }}/sebulan" class="btn btn-primary">Sebulan</a>
+        <a href="{{ url_for('pos.show', id=pos.id) }}/setahun" class="btn btn-outline-primary">Setahun</a></label>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-8"><p class="text-center">Juni 2022</p>
+      <canvas id="chart_hujan_hari"></canvas>
+    </div>
+    <div class="col-sm-4">
+      <div class="row">
+        <div class="col-2"><a href="">Sebelum</a></div>
+        <div class="col-8 text-center"><h3 class="">Juni 2022</h3></div>
+        <div class="col-2 text-end"><a href="">Sesudah</a></div>
+      </div>
+      
+      <p>Dasarian (10 harian)</p>
+      <p>HTH</p>
+      <p>CH sebulan</p>
+      <p>Download</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block js_foot %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = [
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '24',
+    '25',
+    '26',
+    '27',
+    '28',
+    '29',
+    '30',
+  ];
+
+  const data = {
+    labels: labels,
+    datasets: [{
+      label: 'Curah Hujan',
+      backgroundColor: 'rgb(13, 110, 253)',
+      borderColor: 'rgb(255, 99, 132)',
+      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 2, 20, 30, 45],
+    }]
+  };
+
+  const config = {
+    type: 'bar',
+    data: data,
+    options: {}
+  };
+  const myChart = new Chart(
+    document.getElementById('chart_hujan_hari'),
+    config
+  )
+
+</script>
+
+{% endblock %}

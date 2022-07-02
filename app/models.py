@@ -17,7 +17,7 @@ class Raw(db.Model):
     received = pw.DateTimeField()
     sn = pw.CharField(max_length=10)
     
-    
+
 class Tenant(db.Model):
     nama = pw.CharField(max_length=35)
     slug = pw.CharField(max_length=12, unique=True)
@@ -27,6 +27,7 @@ class Tenant(db.Model):
     kodepos = pw.CharField(max_length=5, null=True)
     ll = pw.CharField(max_length=35, null=True)
     center_map = pw.CharField(max_length=60, null=True)
+    zoom_map = pw.IntegerField(null=True)
     telegram_info_group = pw.TextField(null=True)
     telegram_info_id = pw.IntegerField(null=True)
     telegram_alert_group = pw.TextField(null=True)
@@ -48,7 +49,7 @@ class Location(db.Model):
     ll = pw.CharField(max_length=60, null=True)
     tenant = pw.ForeignKeyField(Tenant)
     created = pw.DateTimeField(default=datetime.datetime.now)
-    modified = pw.DateTimeField()
+    modified = pw.DateTimeField(null=True)
     tipe = pw.CharField(max_length=3, null=True)
     elevasi = pw.IntegerField(null=True)
     latest_sampling = pw.DateTimeField(null=True)
@@ -62,6 +63,9 @@ class Location(db.Model):
         except ValueError:
             return 'UNKNOWN', 'secondary'
     
+    def get_sehari(self, day=datetime.date.today):
+        print(day)
+        
     
 class Logger(db.Model):
     sn = pw.CharField(max_length=10)
@@ -106,6 +110,7 @@ class User(UserMixin, db.Model):
     created = pw.DateTimeField(default=datetime.datetime.now)
     modified = pw.DateTimeField(null=True)
     is_petugas = pw.BooleanField(default=False)
+    location = pw.ForeignKeyField(Location, null=True)
     tz = pw.CharField(max_length=35, default='Asia/Jakarta')
     last_login = pw.DateTimeField(null=True)
     last_seen = pw.DateTimeField(null=True)
@@ -142,5 +147,19 @@ class User(UserMixin, db.Model):
         except User.DoesNotExist:
             pass
         return None
+
+class Daily(db.Model):
+    location = pw.ForeignKeyField(Location, null=True)
+    sn = pw.CharField(max_length=10)
+    sampling = pw.DateField()
+    content = pw.TextField()
+        
+
+class Hourly(db.Model):
+    location = pw.ForeignKeyField(Location, null=True)
+    sn = pw.CharField(max_length=10)
+    sampling = pw.DateTimeField()
+    content = pw.TextField()
+        
     
 # $2y$10$ziru/DpvwZOvGp7pNNcU5u0pcUVdFHPV0Z7/NCTsruaq/YdAiklJ.

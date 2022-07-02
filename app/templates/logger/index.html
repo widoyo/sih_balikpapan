@@ -16,14 +16,20 @@
     <div class="col-sm-8">
 <table class="table">
 <thead>
-
+  <tr>
+    <th>SN</th>
+    <th>Tipe</th>
+    <th>Lokasi / Pos</th>
+    <th>&nbsp;</th>
+  </tr>
 </thead>
 <tbody>
   {% for l in loggers %}
   <tr>
     <td><a href="{{l.sn}}">{{ l.sn }}</a></td>
+    <td>{{ l.tipe }}</td>
     <td>{{ l.location.nama }}</td>
-    <td>{{ l.tenant.nama }}</td>
+    <td><a href="{{ url_for('logger.edit', sn=l.sn) }}">Edit</a></td>
   </tr>
   {% else %}
   <tr>

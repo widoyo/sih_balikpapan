@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container">
   <div class="row">
-    <div class="col">
+    <div class="col mb-5">
       <nav aria-label="breadcrumb" class="d-none d-md-block">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/">Home</a></li>
@@ -10,25 +10,20 @@
           <li class="breadcrumb-item active" aria-current="page">{{ pos.nama }}</li>
         </ol>
       </nav>
-      <h1><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span>{{ pos.nama }} <span class="fs-6 badge bg-{{pos.str_tipe()[1]}} rounded-pill">{{ pos.str_tipe()[0] }}</span></h1>
-
+      <h1><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span>{{ pos.nama }} <span class="fs-6 badge bg-primary rounded-pill">PCH</span></h1>
+      <span class="small">Desa</span>
+      <div class="btn-group float-end" role="group">
+        <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-primary">Sehari</a>
+        <a href="{{ url_for('pos.show', id=pos.id) }}/sebulan" class="btn btn-outline-primary">Sebulan</a>
+        <a href="{{ url_for('pos.show', id=pos.id) }}/setahun" class="btn btn-outline-primary">Setahun</a></label>
+      </div>
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-8">
-      {% if pos.tipe == '1' %}
+    <div class="col-sm-8"><p class="text-center">26 Juni 2022</p>
       <canvas id="chart_hujan_hari"></canvas>
-      {% elif pos.tipe == '2' %}
-      Chart PDA
-      {% else %}
-      Chart Klimato
-      {% endif %}
     </div>
     <div class="col-sm-4">
-      <h2>Tentang Lokasi ini</h2>
-      desa 
-      kecamatan 
-      kab 
       <h2>Petugas</h2>
     </div>
   </div>
@@ -37,7 +32,6 @@
 {% block js_foot %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-{% if pos.tipe == '1' %}
   const labels = [
     '07',
     '08',
@@ -84,9 +78,7 @@
     document.getElementById('chart_hujan_hari'),
     config
   )
-  {% elif pos.tipe == '2' %}
-  {% elif pos.tipe == '3' %}
-  {% endif %}
+
 </script>
 
 {% endblock %}

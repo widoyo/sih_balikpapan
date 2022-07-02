@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="/logger">Logger</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ logger.sn }}</a></li>
+        </ol>
+      </nav>
+      <h1>Edit {{ logger.sn }} {{ logger.tipe }}</h1>
+      <form action="{{ url_for('logger.edit', sn=logger.sn) }}/edit" method="POST">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+          <label for="nama" class="form-label">{{ form.location.label }}</label>
+          {{ form.location }}
+          <div id="nama-help" class="form-text"></div>
+        </div>
+      </form>
+      
+    </div>
+  </div>
+</div>
+{% endblock %}

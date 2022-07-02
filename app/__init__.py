@@ -1,6 +1,8 @@
 from email.policy import HTTP
+from datetime import datetime
 import os
-from flask import Flask, jsonify, render_template, redirect, url_for, request
+import click
+from flask import Flask, jsonify, render_template, redirect, url_for, request, json
 from flask import flash, send_from_directory
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 #from werkzeug import generate_password_hash, check_password_hash
@@ -30,12 +32,12 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    from app.models import db, User, Logger
+    from app.models import db, User, Logger, Tenant
     from app import pos 
     from app import logger
-    from . import user
-    from . import tenant
-    from . import map
+    from app import user
+    from app import tenant
+    from app import map
     
     @basic_auth.verify_password
     def verify_password(username, password):
@@ -65,7 +67,63 @@ def create_app(config_class=Config):
             return User.get_by_id(user_id)
         except:
             return None
+
+    @app.before_request
+    def before_request():
+        if current_user.is_authenticated:
+            current_user.last_seen = datetime.utcnow()
+            current_user.save()
+                    
+    @app.cli.command('list-user')
+    def list_user():
+        '''Menampilkan daftar user'''
+        rst = User.select()
+        for u in rst:
+            click.echo("{}\t{}".format(u.id, u.username))
             
+    @app.cli.command('list-tenant')
+    def list_tenant():
+        '''Menampilkan daftar Tenant'''
+        rst = Tenant.select()
+        for t in rst:
+            click.echo("{:>3}\t{}\t{}".format(t.id, t.slug, t.nama))
+    
+    @app.cli.command('periodik')
+    def test_hitungan_pandas():
+        mydata = []
+        click.echo('mytest')
+    
+    @app.cli.command('ps')
+    def ps():
+        rst = db.database.execute_sql("SELECT content FROM raw LIMIT 50")
+        for r in rst.fetchall():
+            ps_rec(r[0])
+    
+    def ps_rec(msg):
+        d = json.loads(msg)
+        sampling = datetime.fromtimestamp(d['sampling'])
+        try:
+            sn = d['device'].split('/')[1]
+        except IndexError:
+            return
+        click.echo("{} pada {}".format(sn, sampling))
+        if 'tick' in d:
+            tipping_factor = 0.2
+            if 'tipping_factor' in d:
+                tipping_factor = d['tipping_factor']
+            click.echo('tick: {} * {}'.format(d['tick'], tipping_factor))
+            
+        if 'distance' in d:
+            sensor_height = 0
+            sensor_resolution = 0
+            if 'sensor_height' in d:
+                sensor_height = d['sensor_height']
+            if 'sensor_resolution' in d:
+                sensor_resolution = d['sensor_resolution']
+            click.echo('dist: {} {} {}'.format(d['distance'], sensor_height, sensor_resolution))
+            #click.echo('distance: {}, sensor_height: {}, sensor_resolution: {}'.format(d['distance'], d['sensor_height'], d['sensor_resolution']))
+        #click.echo(datetime.fromtimestamp(d['sampling']))
+        
     @app.route('/token', methods=['POST'])
     @basic_auth.login_required
     def get_token():
@@ -107,6 +165,7 @@ def create_app(config_class=Config):
                 flash('Invalid username or password')
                 return redirect(url_for('login'))
             login_user(user, remember=form.remember_me.data)
+            
             next_page = request.args.get('next')
             if not next_page or url_parse(next_page).netloc != '':
                 next_page = '/'
