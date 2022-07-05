@@ -6,15 +6,15 @@
       <nav aria-label="breadcrumb" class="d-none d-md-block">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/">Home</a></li>
-          <li class="breadcrumb-item"><a href="/pos/pch">Pos Curah Hujan</a></li>
+          <li class="breadcrumb-item"><a href="/pos/pda">Pos Duga Air</a></li>
           <li class="breadcrumb-item active" aria-current="page">{{ pos.nama }}</li>
         </ol>
       </nav>
-    <h2>{{ pos.nama }}</h2>
+      <h2>{{ pos.nama }}</h2>
       <span class="small">Desa</span>
       <div class="btn-group float-end" role="group">
         <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>
-        <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=thn.year, bulan=1) }}" class="btn btn-outline-primary">Sebulan</a>
+        <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=thn.year, bulan=thn.month) }}" class="btn btn-outline-primary">Sebulan</a>
         <a href="{{ url_for('pos.show_setahun', id=pos.id, tahun=thn.year) }}" class="btn btn-primary">Setahun</a></label>
       </div>
     </div>
@@ -24,11 +24,9 @@
       <canvas id="chart_hujan_hari"></canvas>
     </div>
     <div class="col-sm-4">
-      <h2>Hujan Maksimum</h2>
-      <p>total hujan setahun: telemetri & manual</p>
-      <p>Hujan tertinggi</p>
-      <p>Bulan hujan tertinggi</p>
-      <p>HTH (Hari Tanpa Hujan) setahun</p>
+      <h2>Ringkasan</h2>
+      <p>TMA tertinggi</p>
+      <p>Waktu rata-rata kenaikan air</p>
       <p>Download</p>
       <ol>
         <li>Jan</li>
@@ -45,18 +43,31 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   const labels = [
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '00',
     '01',
     '02',
     '03',
     '04',
     '05',
     '06',
-    '07',
-    '08',
-    '09',
-    '10',
-    '11',
-    '12'];
+  ];
 
   const data = {
     labels: labels,
@@ -64,7 +75,7 @@
       label: 'Curah Hujan',
       backgroundColor: 'rgb(13, 110, 253)',
       borderColor: 'rgb(255, 99, 132)',
-      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5],
+      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 2, 20, 30, 45],
     }]
   };
 

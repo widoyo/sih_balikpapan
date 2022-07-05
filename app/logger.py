@@ -7,12 +7,12 @@ from .forms import LoggerForm
 
 bp = Blueprint('logger', __name__)
 
-
+'''
 @bp.before_request
 def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
-
+'''
 
 @bp.route('/<sn>/edit')
 @login_required

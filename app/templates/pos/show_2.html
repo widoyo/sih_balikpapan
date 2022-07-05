@@ -7,12 +7,16 @@
       <nav aria-label="breadcrumb" class="d-none d-md-block">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/">Home</a></li>
-          <li class="breadcrumb-item"><a href="/pos">Pos Pengamatan</a></li>
+          <li class="breadcrumb-item"><a href="/pos/pda">Pos Duga Air</a></li>
           <li class="breadcrumb-item active" aria-current="page">{{ pos.nama }}</li>
         </ol>
       </nav>
       <h1><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span>{{ pos.nama }} <span class="fs-6 badge bg-danger rounded-pill">PDA</span></h1>
-
+      <div class="btn-group float-end" role="group">
+        <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-primary">Sehari</a>
+        <a href="{{ url_for('pos.show', id=pos.id) }}{{ tgl.year }}/{{ tgl.month }}" class="btn btn-outline-primary">Sebulan</a>
+        <a href="{{ url_for('pos.show', id=pos.id) }}{{ tgl.year }}" class="btn btn-outline-primary">Setahun</a></label>
+      </div>
     </div>
   </div>
   <div class="row">
@@ -20,6 +24,11 @@
       <canvas id="chart_hujan_hari"></canvas>
     </div>
     <div class="col-sm-4">
+      <div class="row mb-5">
+        <div class="col-4"><a href="{{ url_for('pos.show', id=pos.id, tahun=_tgl.year, bulan=_tgl.month, tanggal=_tgl.day) }}">Before</a></div>
+        <div class="col-4 text-center">{{ tgl.strftime('%d %b %Y') }}</div>
+        <div class="col-4 text-end"><a href="{{ url_for('pos.show', id=pos.id, tahun=tgl_.year, bulan=tgl_.month, tanggal=tgl_.day) }}">After</a></div>
+      </div>
       <div class="mb-5">
         <h4>Data Logger</h4>
         <table class="table">
@@ -46,6 +55,12 @@
       </div>
       <div class="mb-5">
       <h4>Tentang Lokasi ini</h4>
+      <ul>
+        <li>Siaga Hijau: {{ pos.sh }}</li>
+        <li>Siaga Kuning: {{ pos.sk }}</li>
+        <li>Siaga Merah: {{ pos.sm }}</li>
+      </ul>
+      <p></p>
       desa 
       kecamatan 
       kab 
@@ -123,15 +138,15 @@
   const data = {
     labels: labels,
     datasets: [{
-      label: 'Curah Hujan',
-      backgroundColor: 'rgb(13, 110, 253)',
+      label: 'Tinggi Muka Air',
+      backgroundColor: 'rgb(255, 99, 132)',
       borderColor: 'rgb(255, 99, 132)',
-      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 2, 20, 30, 45],
+      data: [0.5, 0.5, 0.6, 0.7, 0.8, 0.9, 0.8, 0.7, 0.7, 0.6, 0.6, 0.5, 0.4, 0.4, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5],
     }]
   };
 
   const config = {
-    type: 'bar',
+    type: 'line',
     data: data,
     options: {}
   };

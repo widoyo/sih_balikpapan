@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Blueprint, request, render_template, redirect, flash
 from flask_login import current_user, login_required
 from playhouse.flask_utils import get_object_or_404
@@ -49,29 +49,38 @@ def edit(id):
     return render_template('pos/edit.html', pos=pos)
 
 
-@bp.route('/<id>/setahun')
+@bp.route('/<id>/<int:tahun>/<int:bulan>')
 @login_required
-def show_setahun(id):
+def show_sebulan(id, tahun, bulan):
+    bulan = datetime(tahun, bulan, 1)
+    sbl = bulan - timedelta(days=1)
+    ssd = bulan + timedelta(days=32)
     id = int(id.split('-')[0])
     pos = get_object_or_404(Location, (Location.id == id))
     if pos.tipe not in ('1', '2', '3'):
         return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
-    return render_template('pos/show_setahun_{}.html'.format(pos.tipe), pos=pos)
+    return render_template('pos/show_sebulan_{}.html'.format(pos.tipe), 
+                           pos=pos, bln=bulan, _bln=sbl, bln_=ssd)
 
 
-@bp.route('/<id>/sebulan')
+@bp.route('/<id>/<int:tahun>')
 @login_required
-def show_sebulan(id):
+def show_setahun(id, tahun):
     id = int(id.split('-')[0])
+    thn = datetime.today().replace(year=tahun)
+    thn_ = thn + timedelta(days=366)
+    _thn = thn - timedelta(days=1)
     pos = get_object_or_404(Location, (Location.id == id))
     if pos.tipe not in ('1', '2', '3'):
         return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
-    return render_template('pos/show_sebulan_{}.html'.format(pos.tipe), pos=pos)
+    return render_template('pos/show_setahun_{}.html'.format(pos.tipe), 
+                           pos=pos, thn=thn, _thn=_thn, thn_=thn_)
 
-
-@bp.route('/<id>')
+@bp.route('/<id>/', defaults={'tahun': datetime.today().year, 'bulan': datetime.today().month, 'tanggal': datetime.today().day})
+@bp.route('/<id>/<int:tahun>/<int:bulan>/<int:tanggal>')
 @login_required
-def show(id):
+def show(id, tahun, bulan, tanggal):
+    tgl = datetime(tahun, bulan, tanggal)
     id = int(id.split('-')[0])
     pos = get_object_or_404(Location, (Location.id == id))
     if pos.tipe not in ('1', '2', '3'):
@@ -79,7 +88,8 @@ def show(id):
     user_form = UserForm(is_petugas=True, tenant=current_user.tenant, location=pos)
     if user_form.validate_on_submit():
         pass
-    return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, user_form=user_form)
+    return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, 
+                           tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), user_form=user_form)
 
 
 @bp.route('/', methods=['GET', 'POST'])

@@ -56,6 +56,9 @@ class Location(db.Model):
     latest_up = pw.DateTimeField(null=True)
     das = pw.ForeignKeyField(Das, null=True)
     wilayah = pw.CharField(null=True)
+    sh = pw.FloatField(null=True) # batas siaga Hijau dalam meter
+    sk = pw.FloatField(null=True) # batas siaga Kuning dalam meter
+    sm = pw.FloatField(null=True) # batas siaga Merah dalam meter
     
     def str_tipe(self):
         try:

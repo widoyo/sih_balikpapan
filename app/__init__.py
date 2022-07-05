@@ -1,6 +1,7 @@
 from email.policy import HTTP
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
+import time
 import click
 from flask import Flask, jsonify, render_template, redirect, url_for, request, json
 from flask import flash, send_from_directory
@@ -12,6 +13,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from .forms import UserForm
+import pandas as pd
 
 from config import Config
 
@@ -32,7 +34,7 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    from app.models import db, User, Logger, Tenant
+    from app.models import db, User, Logger, Tenant, Raw
     from app import pos 
     from app import logger
     from app import user
@@ -73,6 +75,48 @@ def create_app(config_class=Config):
         if current_user.is_authenticated:
             current_user.last_seen = datetime.utcnow()
             current_user.save()
+            if current_user.tenant:
+                os.environ['TZ'] = current_user.tenant.timezone
+            else:
+                os.environ['TZ'] = 'Asia/Jakarta'
+            time.tzset()
+            
+    @app.cli.command('ke_jam')
+    @click.option('--jam', help='Jam data yang akan diproses')
+    @click.argument('sn')
+    def ringkas_ke_jam(jam, sn):
+        if not jam:
+            jam = datetime.now().replace(minute=0, second=0) - timedelta(hours=1)
+        click.echo(sn)
+        click.echo(jam)
+        
+    @app.cli.command('browse')
+    def browse():
+        '''Browsing data (table 'raw')'''
+        sn = '1910-28'
+        _sta = 1648767600
+        _end = 1648857300
+        rst = db.database.execute_sql("SELECT content FROM raw WHERE sn='{}' AND content->>'sampling' >= {} AND content->>'sampling' < {} ORDER BY id ".format(sn, _sta, _end))
+        data = [json.loads(r[0]) for r in rst]
+        '''
+        for r in data:
+            click.echo(datetime.fromtimestamp(r['sampling']))
+        return
+        '''
+        click.echo(data[0])
+        df = pd.DataFrame(data)
+        df['sampling'] = pd.to_datetime(df['sampling'], unit='s')
+        df.drop(columns=['device', 'time_set_at', 'signal_quality', 'pressure', 'altitude', 'temperature'], inplace=True)
+        df.set_index('sampling')
+        if 'tipping_factor' in df:
+            tf = df['tipping_factor']
+        else:
+            tf = 0.2
+        df['rain'] = df['tick'] * tf
+        click.echo(df)
+        #click.echo(pd.__version__)
+        #click.echo(df.groupby(pd.Grouper(key='sampling', freq='1h'))['rain'].sum())
+        #click.echo(df.info())
                     
     @app.cli.command('list-user')
     def list_user():
