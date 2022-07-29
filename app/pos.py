@@ -89,7 +89,7 @@ def show(id, tahun, bulan, tanggal):
     if user_form.validate_on_submit():
         pass
     return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, 
-                           tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), user_form=user_form)
+                           tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), user_form=user_form, show=show)
 
 
 @bp.route('/', methods=['GET', 'POST'])

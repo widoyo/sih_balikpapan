@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Download</li>
+        </ol>
+      </nav>
+      <h1>Download </h1>
+      <p class="text-mutted">Output </p>
+      <form action="/download" method="POST">
+        {{ form.location }}
+        {{ form.bulan }}
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

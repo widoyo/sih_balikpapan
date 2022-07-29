@@ -2,34 +2,52 @@
 {% block content %}
 <div class="container">
   <div class="row">
-    <div class="col">
-      {% if current_user %}
-      <h1>{{ current_user.tenant.nama }}</h1>
-      <p>{{ current_user.tenant.center_map }}</p>
-      <p>Populasi primabot : {{ loggers_count }}</p>
-      {{ user_form }}
-      <h2>Daftar Pos</h2>
-      <h2>Daftar DAS (Daerah Aliran Sungai</h2>
-      <h2>Wilayah Sungai</h2>
-      {% else %}
-      <form method="POST" action="/login" class="p-4 p-md-5 border rounded-3 bg-light">
-        {{ form.hidden_tag() }}
-        <div class="form-floating mb-3">
-          <input type="text" name="username" class="form-control" id="floatingInput" placeholder="username">
-          <label for="floatingInput">Username</label>
-        </div>
-        <div class="form-floating mb-3">
-          <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password">
-          <label for="floatingPassword">Password</label>
-        </div>
-        <div class="mb-3">
-          <button class="w-100 btn btn-lg btn-primary" type="submit">Login</button>
-        </div>
-        <hr>
-        <p><i class="text-muted">Tidak punya akun atau lupa password? hubungi Unit Pengelola Bendungan BBWS Pemali Juwana</i></p>
-      </form>
-    {% endif %}      
+    <div class="col-md-6">
+      <h2>Hujan Hari ini</h2>
+      <i>Tidak ada hujan dari (sekian) PCH</i>
+      <h2>TMA Terkini</h2>
+    </div>
+    <div class="col-md-6">
+      <div class="mb-4">
+        <h3>Upload</h3>
+        <p>Untuk menambahkan data dari primabot yang tidak berhasil dikirim ke server.</p>
+        <p>File dari hasil download pada primabot. File teks berektensi <code>*.csv</code>.</p>
+        <form action="/upload" method='POST' enctype="multipart/form-data">
+          <div class="mb-3">
+            {{data_upload_form.to_import(class='form-control', accept='text/csv') }}
+          </div>
+          <div class="mb-3" id="to_import_summary"></div>
+          {{ data_upload_form.submit(class='btn btn-primary') }}
+        </form>  
+      </div>
+      <h3>Logger tidak sehat</h3>
     </div>
   </div>
 </div>
+{% endblock %}
+{% block js_foot %}
+<script>
+  let to_import = document.getElementById('to_import');
+  to_import.addEventListener('change', (e) => {
+    let f = to_import.files;
+    if (f.length) {
+      console.log(f[0].name);
+    }
+		let reader = new FileReader();
+		reader.readAsText(f[0]);
+		reader.onload = (e) => {
+			const lines = e.target.result.split(/\r\n|\n/);
+			const head = lines[0];
+      console.log('head: ' + head);
+			sn = head.split(' ')[0].split('/')[1]
+      console.log('sn: ' + sn);
+      console.log('l0: ' + lines[0]);
+      console.log('l1: ' + lines[1]);
+      console.log('l2: ' + lines[2]);
+      console.log('l3: ' + lines[3]);
+			data = lines.slice(0, lines.length)
+			console.log(data.length)
+		}
+  }, false);
+</script>
 {% endblock %}

@@ -5,9 +5,8 @@ import sys
 from dotenv import dotenv_values
 import psycopg2 as pg2
 from pathlib import Path
-from app.db import SessionLocal
 import pandas as pd
-from app.models import Tenant, Device
+from app.models import Tenant, Logger, db
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -65,8 +64,7 @@ def send_data_to_tenant(tenant_id):
         foreach logger as l:
 
     '''
-    db = SessionLocal()
-    t = db.query(Tenant).filter(Tenant.id==tenant_id).one()
+    t = Tenant.get(tenant_id)
     set_timezone(t.tz)
     bulan = datetime.date.today().strftime('%m/%Y')
     for d in t.devices:
@@ -74,32 +72,43 @@ def send_data_to_tenant(tenant_id):
         to_5(r['result'], d.sn, r['awal'], r['akhir'])
 
 def get_data(sn, bulan):
+    '''Output data 5 menitan logger 'sn' pada bulan'''
+
+    # format sn wajib 'dddd-d'
     if '-' not in sn:
-        raise ValueError('SN tidak ditemukan') 
+        raise ValueError('SN tidak ditemukan')
+    
+    # format bulan bulan/tahun atau bulan-tahun 
     if '/' in bulan:
         bl = datetime.datetime.strptime(bulan, '%m/%Y')
     elif '-' in bulan:
         bl = datetime.datetime.strptime(bulan, '%m-%Y')
     else:
         raise ValueError('"bulan" harus dalam format bl/tahu atau bl-tahu')
+    
+    # input bulan tidak setelah bulan sekarang
     now = datetime.datetime.now()
     if bl > now:
         raise ValueError('Waktu tidak bisa yang akan datang')
+    
+    # batas awal waktu dari jam 7
     bl = bl.replace(hour=7)
     if int(bl.strftime('%Y%m')) < int(now.strftime('%Y%m')):
         akhir = (bl.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
         akhir = akhir.replace(hour=7)
     else:
         akhir = now
-    db = SessionLocal()
+    
     sql = "SELECT content from raw \
         WHERE content->>'device' LIKE '{sn}' AND \
-            (content->>'sampling')::BIGINT BETWEEN {awal} AND \
+            (content->>'sampling') BETWEEN {awal} AND \
                 {akhir} ORDER BY content->>'sampling'".format(sn='%'+sn+'/%', 
                 awal=bl.timestamp(), akhir=akhir.timestamp())
-    rst = db.execute(sql)
+    # ambil data versi sqlalchemy
+    rst = db.database.execute_sql(sql)
+    result = [r[0] for r in rst]
     #to_5([r[0] for r in rst.fetchall()], sn, bl, akhir)
-    return {'result': [r[0] for r in rst.fetchall()], 'sn': sn, 'awal': bl, 'akhir': akhir} 
+    return {'result': result, 'sn': sn, 'awal': bl, 'akhir': akhir} 
 
 
 def to_5(data, sn, awal, akhir):
@@ -107,8 +116,7 @@ def to_5(data, sn, awal, akhir):
     @data: json dari 'raw.content' '''
     if not len(data):
         return
-    db = SessionLocal()
-    logger = db.query(Device).filter(Device.sn==sn).one()
+    logger = Logger.get(Logger.sn==sn)
     df = pd.DataFrame(data)
     dates = pd.date_range(awal, akhir, freq='5T')
     dft = pd.DataFrame(index=dates)
@@ -136,8 +144,7 @@ def to_jam(dataframe, sn, awal, akhir):
     '''output csv data 60 menit (1 jam)'''
     if dataframe.empty:
         return
-    db = SessionLocal()
-    logger = db.query(Device).filter(Device.sn==sn).one()
+    logger = Logger.get(Logger.sn==sn)
     grouper = pd.Grouper(freq='1h')
     if hasattr(dataframe, 'rain'):
         grouped = dataframe.groupby(grouper)['rain']

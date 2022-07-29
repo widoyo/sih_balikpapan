@@ -152,17 +152,38 @@ class User(UserMixin, db.Model):
         return None
 
 class Daily(db.Model):
+    '''Data per Hari, komilasi dari Hourly'''
     location = pw.ForeignKeyField(Location, null=True)
     sn = pw.CharField(max_length=10)
-    sampling = pw.DateField()
-    content = pw.TextField()
+    sampling = pw.DateField() # Tanggal, start jam 7, pada hari lalu
+    rain = pw.IntegerField(default=0)
+    wlevel_a = pw.FloatField(null=True) # average
+    wlevel_x = pw.FloatField(null=True) # Max
+    wlevel_n = pw.FloatField(null=True) # Min
+    num_data = pw.IntegerField(default=0)
+    sq_a = pw.IntegerField(null=True)
+    batt_a = pw.FloatField(null=True) # dalam volt
+    m_rain = pw.FloatField(default=0) # Manual Rain, satuan mm
+    m_wlevel = pw.FloatField(null=True) # Manual TMA, satuan Meter
+    petugas = pw.CharField(max_length=100, null=True) # username petugas, bisa comma separated
+    num_start = pw.IntegerField(default=0) # banyaknya restart primabot pada jam ini
+    content = pw.TextField(null=True)
         
 
 class Hourly(db.Model):
+    '''Data per jam, kompilasi dari 5 menitan'''
     location = pw.ForeignKeyField(Location, null=True)
     sn = pw.CharField(max_length=10)
-    sampling = pw.DateTimeField()
-    content = pw.TextField()
+    sampling = pw.DateTimeField() # tanggal dan jam. Menit & Detik = 0
+    rain = pw.IntegerField(default=0)
+    wlevel_a = pw.FloatField(null=True) # average
+    wlevel_x = pw.FloatField(null=True) # Max
+    wlevel_n = pw.FloatField(null=True) # Min
+    num_data = pw.IntegerField(default=0)
+    sq_a = pw.IntegerField(null=True)
+    batt_a = pw.FloatField(null=True)
+    num_start = pw.IntegerField(default=0) # banyaknya restart primabot pada jam ini
+    content = pw.TextField(null=True)
         
     
 # $2y$10$ziru/DpvwZOvGp7pNNcU5u0pcUVdFHPV0Z7/NCTsruaq/YdAiklJ.
