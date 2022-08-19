@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from flask import Blueprint, request, render_template
 from flask_login import current_user, login_required
 
@@ -37,7 +37,16 @@ def show(sn):
 @bp.route('/sehat')
 @login_required
 def sehat():
-    return render_template('logger/sehat.html')
+    logger_list = Logger.select().where(Logger.tenant==current_user.tenant)
+    sampling = request.args.get('s', '')
+    if sampling == '':
+        sampling = datetime.date.today()
+    else:
+        sampling = datetime.datetime.strptime(sampling, '%Y-%m-%d')
+    next_s = sampling + datetime.timedelta(days=1)
+    prev_s = sampling - datetime.timedelta(days=1)
+    return render_template('logger/sehat.html', logger_list=logger_list,
+                           sampling=sampling, next_s=next_s, prev_s=prev_s)
 
 
 @bp.route('/', methods=['GET', 'POST'])

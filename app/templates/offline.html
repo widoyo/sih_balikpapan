@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h1>Data Offline</h1>
+      <p>Data yang telah diupload yang diambil dari memory primabot.</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-8">
+<table class="table">
+  <thead>
+    <tr>
+      <th>No</th>
+      <th>Nama File</th>
+      <th>Banyak data</th>
+      <th>Awal</th>
+      <th>Akhir</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in offlines %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ o.fname }}</td>
+      <td>{{ o.banyak }}</td>
+      <td>{{ o.awal }}</td>
+      <td>{{ o.akhir }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+    </div>
+  </div>
+</div>
+{% endblock %}

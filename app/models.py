@@ -2,6 +2,7 @@ import datetime
 import base64
 import os
 from enum import unique
+from flask import url_for
 from flask_login import UserMixin
 from bcrypt import checkpw, hashpw, gensalt
 import peewee as pw
@@ -35,6 +36,15 @@ class Tenant(db.Model):
     timezone = pw.CharField(max_length=35, default='Asia/Jakarta')
     email = pw.CharField(max_length=35, null=True)
     
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'nama': self.nama,
+            '_links': {
+                'self': url_for('api.get_tenant', id=self.id)
+            }
+        }
+        return data
     
 class Das(db.Model):
     nama = pw.CharField(max_length=35, unique=True)
@@ -110,9 +120,9 @@ class User(UserMixin, db.Model):
     is_active = pw.BooleanField(default=True)
     tenant = pw.ForeignKeyField(Tenant, null=True)
     email = pw.CharField(max_length=50, null=True)
+    hp = pw.CharField(max_length=20, null=True)
     created = pw.DateTimeField(default=datetime.datetime.now)
     modified = pw.DateTimeField(null=True)
-    is_petugas = pw.BooleanField(default=False)
     location = pw.ForeignKeyField(Location, null=True)
     tz = pw.CharField(max_length=35, default='Asia/Jakarta')
     last_login = pw.DateTimeField(null=True)
@@ -123,6 +133,25 @@ class User(UserMixin, db.Model):
     class Meta:
         table_name = 'users'
     
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'username': self.username,
+            'last_seen': self.last_seen and self.last_seen.isoformat() or None,
+            'tenant': self.tenant.to_dict(),
+            '_links': {
+                'self': url_for('api.get_user', id=self.id)
+            }
+        }
+        return data
+    
+    def from_dict(self, data, new_user=False):
+        for field in ['username', 'email']:
+            if field in data:
+                setattr(self, field, data[field])
+        if new_user and 'password' in data:
+            self.set_password(data['password'])
+
     def check_password(self, password):
         return checkpw(password.encode(), self.password.encode())
     
@@ -179,11 +208,21 @@ class Hourly(db.Model):
     wlevel_a = pw.FloatField(null=True) # average
     wlevel_x = pw.FloatField(null=True) # Max
     wlevel_n = pw.FloatField(null=True) # Min
-    num_data = pw.IntegerField(default=0)
-    sq_a = pw.IntegerField(null=True)
-    batt_a = pw.FloatField(null=True)
+    num_data = pw.IntegerField(default=0) # banyak data
+    sq_a = pw.IntegerField(null=True) # rerata
+    batt_a = pw.FloatField(null=True) # rerata
     num_start = pw.IntegerField(default=0) # banyaknya restart primabot pada jam ini
     content = pw.TextField(null=True)
-        
     
-# $2y$10$ziru/DpvwZOvGp7pNNcU5u0pcUVdFHPV0Z7/NCTsruaq/YdAiklJ.
+    
+class Offline(db.Model):
+    '''Upload data dari Memory primaBot'''
+    sn = pw.CharField(max_length=10)
+    location = pw.CharField(max_length=50)
+    fname = pw.CharField(max_length=100)
+    content = pw.TextField()
+    awal = pw.DateTimeField(null=True)
+    akhir = pw.DateTimeField(null=True)
+    banyak = pw.IntegerField(default=0)
+    cdate = pw.DateTimeField(default=datetime.datetime.now)
+    username = pw.CharField(null=True)

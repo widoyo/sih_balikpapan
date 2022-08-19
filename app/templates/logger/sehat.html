@@ -10,8 +10,32 @@
           <li class="breadcrumb-item active" aria-current="page">Sehat</li>
         </ol>
       </nav>
-      <h1>Kesehatan Logger</h1>
-    </div>
+      <h1>Kesehatan Logger <span class="float-end"><a href="{{ url_for('logger.sehat') }}?s={{ prev_s.strftime('%Y-%m-%d') }}"><i class="bi bi-arrow-bar-left"></i></a> {{ sampling.strftime('%d') }} <span class="text-muted">{{ sampling.strftime('%b') }} {{ sampling.strftime('%Y') }}</span> <a href="{{ url_for('logger.sehat') }}?s={{ next_s.strftime('%Y-%m-%d') }}"><i class="bi bi-arrow-bar-right"></i></a></span></h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Logger</th>
+            {% for i in range(0, 24) %}
+            <th>{{ i }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for logger in logger_list %}
+          <tr>
+            <td>{{ logger.sn }} <span class="text-muted">{{ logger.location.nama }}</span></td>
+            {% for i in range(0, 24) %}
+            <td>{{ i }}</td>
+            {% endfor %}
+          </tr>
+      {% else %}
+        <tr>
+          <td colspan="25">Tidak ada logger pada {{ current_user.tenant }}</td>
+        </tr>
+      {% endfor %}
+        </tbody>
+      </table>
+  </div>
   </div>
 </div>
 {% endblock %}

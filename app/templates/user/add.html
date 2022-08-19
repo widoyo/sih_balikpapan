@@ -10,15 +10,40 @@
           <li class="breadcrumb-item active" aria-current="page">Tambah</li>
         </ol>
       </nav>
-      <h1>Tambah User</h1>
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      <div class="alert alert-primary" role="alert">
+        <ul>
+          {% for m in messages %}
+            <li>{{ m }}</li>
+          {% endfor %}  
+        </ul>
+      </div>
+      {% endif %}
+      {% endwith %}
+      {% for e in errors %}
+      <li>{{ e }}</li>
+      {% endfor %}
+    <h1>Tambah User</h1>
       </div>
       </div>
   <div class="row">
     <div class="col-sm-6">
-      <form action="/user" method="POST">
-      {% for f in form %}
-      <li>{{ f.label }} {{f}}</li>
-      {% endfor %}
+      <form action="{{ url_for('user.add') }}" method="POST">
+        {{ form.hidden_tag() }}
+      <div class="mb-3">
+        <label for="username" class="form-label">{{ form.username.label }}</label>
+        {{ form.username(class='form-control') }}
+      </div>
+      <div class="mb-3">
+        <label for="" class="form-label">{{ form.password.label }}</label>
+        {{ form.password(class='form-control') }}
+      </div>
+      <div class="mb-3">
+        <label for="location" class="form-label">POS Hidrologi </label>
+        {{ form.location(class='form-select') }}
+      </div>
+      <div class="mb-3">{{ form.submit(class='btn btn-primary') }}</div>
       </form>
     </div>
   </div>

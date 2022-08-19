@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from flask import Blueprint, request, render_template, redirect, flash
+from flask import Blueprint, request, render_template, redirect, flash, abort
 from flask_login import current_user, login_required
 from playhouse.flask_utils import get_object_or_404
 from .models import Location
@@ -17,14 +17,26 @@ def before_request():
 @bp.route('/pch/')
 def pch():
     '''Tampilkan tentang curah hujan'''
+    sampling = request.args.get('s')
+    try:
+        tahun,bulan,tanggal = sampling.split('/')
+    except:
+        tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
+    tgl = datetime(int(tahun), int(bulan), int(tanggal))
     pch = Location.select().where(Location.tipe=='1', Location.tenant==current_user.tenant)
-    return render_template('pos/pch.html', poses=pch)
+    return render_template('pos/pch.html', poses=pch, tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1))
 
 @bp.route('/pda/')
 def pda():
     '''Tampilkan tentang Duga Air'''
+    sampling = request.args.get('s')
+    try:
+        tahun,bulan,tanggal = sampling.split('/')
+    except:
+        tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
+    tgl = datetime(int(tahun), int(bulan), int(tanggal))
     pda = Location.select().where(Location.tipe=='2', Location.tenant==current_user.tenant)
-    return render_template('pos/pda.html', poses=pda)
+    return render_template('pos/pda.html', poses=pda, tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1))
 
 @bp.route('/add/', methods=['POST', 'GET'])
 @login_required
@@ -76,7 +88,7 @@ def show_setahun(id, tahun):
     return render_template('pos/show_setahun_{}.html'.format(pos.tipe), 
                            pos=pos, thn=thn, _thn=_thn, thn_=thn_)
 
-@bp.route('/<id>/', defaults={'tahun': datetime.today().year, 'bulan': datetime.today().month, 'tanggal': datetime.today().day})
+@bp.route('/<id>/')
 @bp.route('/<id>/<int:tahun>/<int:bulan>/<int:tanggal>')
 @login_required
 def show(id, tahun, bulan, tanggal):
@@ -96,6 +108,8 @@ def show(id, tahun, bulan, tanggal):
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
+    if current_user.location:
+        abort(404)
     poses = Location.select().where(Location.tenant == current_user.tenant)
     #print(current_user.tenant.id)
     return render_template('pos/index.html', poses=poses)

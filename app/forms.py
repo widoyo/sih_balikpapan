@@ -1,11 +1,24 @@
+import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SelectField, BooleanField, PasswordField
-from wtforms import HiddenField, SubmitField
+from wtforms import HiddenField, SubmitField, DateField, FloatField
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 
 from .models import TIPE_POS
 
+class ManualChForm(FlaskForm):
+    location = HiddenField()
+    sampling = DateField('Tanggal Data')
+    ch = FloatField('Curah Hujan (mm)', default=0)
+    submit = SubmitField('Kirim')
+    
+class ManualTmaForm(FlaskForm):
+    location = HiddenField()
+    sampling = StringField()
+    tma = StringField()
+    submit = SubmitField()
+    
 class DataDownloadForm(FlaskForm):
     location = SelectField(validators=[])
     bulan = SelectField(validators=[])
@@ -25,9 +38,9 @@ class PasswordForm(FlaskForm):
 class UserForm(FlaskForm):
     username = StringField()
     password = PasswordField()
-    is_petugas = BooleanField()
     location = SelectField()
     tenant = HiddenField()
+    submit = SubmitField('Kirim')
     
 
 class PosForm(FlaskForm):

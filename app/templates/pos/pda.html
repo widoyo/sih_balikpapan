@@ -17,23 +17,28 @@
 <table class="table">
   <thead>
     <tr>
-      <th>No</th>
-      <th>Nama</th>
-      <th>Siaga Hijau</th>
-      <th>Siaga Kuning</th>
-      <th>Siaga Merah</th>
-      <th class="small">06:00</th>
-      <th class="small">12:00</th>
-      <th class="small">18:00</th>
-      <th class="small">06:00</th>
-      <th class="small">12:00</th>
-      <th class="small">18:00</th>
+      <th rowspan="2" class="align-baseline">No</th>
+      <th rowspan="2" class="align-baseline">Nama</th>
+      <th colspan="2" class="small text-center">Pagi <span style="font-weight: 300;font-size: 10pt;">jam 6</span></th>
+      <th colspan="2" class="small text-center">Siang <span style="font-weight: 300;font-size: 10pt;">jam 12</span></th>
+      <th colspan="2" class="small text-center">Sore <span style="font-weight: 300;font-size: 10pt;">jam 18</span></th>
+      <th rowspan="2">S. Hijau</th>
+      <th rowspan="2">S. Kuning</th>
+      <th rowspan="2">S. Merah</th>
+    </tr>
+    <tr>
+      <th class="small" style="font-weight: 400;font-size: 10pt;">Telemetri</th>
+      <th class="small" style="font-weight: 400;font-size: 10pt;">Manual</th>
+      <th class="small" style="font-weight: 400;font-size: 10pt;">Telemetri</th>
+      <th class="small" style="font-weight: 400;font-size: 10pt;">Manual</th>
+      <th class="small" style="font-weight: 400;font-size: 10pt;">Telemetri</th>
+      <th class="small" style="font-weight: 400;font-size: 10pt;">Manual</th>
     </tr>
   </thead>
   <tbody>
     {% for p in poses %}
     <tr>
-      <td></td>
+      <td>{{ loop.index }}</td>
       <td><a href="/pos/{{p.id}}-{{p.nama}}">{{ p.nama }}</a></td>
       <td></td>
       <td></td>

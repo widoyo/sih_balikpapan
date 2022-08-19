@@ -13,6 +13,7 @@
         <p>Untuk menambahkan data dari primabot yang tidak berhasil dikirim ke server.</p>
         <p>File dari hasil download pada primabot. File teks berektensi <code>*.csv</code>.</p>
         <form action="/upload" method='POST' enctype="multipart/form-data">
+          {{ data_upload_form.csrf_token }}
           <div class="mb-3">
             {{data_upload_form.to_import(class='form-control', accept='text/csv') }}
           </div>

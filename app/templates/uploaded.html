@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-6"></div>
+    <div class="col-sm-6">
+        <h2>Upload Data Telemetri</h2>
+        <p>Untuk menambahkan data dari primabot yang tidak berhasil dikirim ke server.</p>
+        <p>File <b>berasal dari</b> hasil download pada primabot. File teks berektensi <code>*.csv</code>.</p>
+        <form action="/upload" method='POST' enctype="multipart/form-data">
+          {{ data_upload_form.csrf_token }}
+          <div class="mb-3">
+            {% if data_upload_form.to_import.errors %}
+            <ul class="error">
+              {% for e in data_upload_form.to_import.errors %}
+              <li>{{ e }}</li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+            {{data_upload_form.to_import(class='form-control', accept='text/csv') }}
+          </div>
+          <div class="mb-3" id="to_import_summary"></div>
+          {{ data_upload_form.submit(class='btn btn-primary') }}
+        </form>  
+    </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

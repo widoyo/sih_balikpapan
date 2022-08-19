@@ -2,6 +2,7 @@
 
 import os, datetime, time
 import sys
+import json
 from dotenv import dotenv_values
 import psycopg2 as pg2
 from pathlib import Path
@@ -65,11 +66,12 @@ def send_data_to_tenant(tenant_id):
 
     '''
     t = Tenant.get(tenant_id)
-    set_timezone(t.tz)
-    bulan = datetime.date.today().strftime('%m/%Y')
-    for d in t.devices:
+    set_timezone(t.timezone)
+    #bulan = datetime.date.today().strftime('%m/%Y')
+    bulan = '01/2022'
+    for d in t.logger_set:
         r = get_data(d.sn, bulan)
-        to_5(r['result'], d.sn, r['awal'], r['akhir'])
+        #to_5(r['result'], d.sn, r['awal'], r['akhir'])
 
 def get_data(sn, bulan):
     '''Output data 5 menitan logger 'sn' pada bulan'''
@@ -106,9 +108,9 @@ def get_data(sn, bulan):
                 awal=bl.timestamp(), akhir=akhir.timestamp())
     # ambil data versi sqlalchemy
     rst = db.database.execute_sql(sql)
-    result = [r[0] for r in rst]
-    #to_5([r[0] for r in rst.fetchall()], sn, bl, akhir)
-    return {'result': result, 'sn': sn, 'awal': bl, 'akhir': akhir} 
+    result = [json.loads(r[0]) for r in rst]
+    to_5(result, sn, bl, akhir)
+    #return {'result': result, 'sn': sn, 'awal': bl, 'akhir': akhir} 
 
 
 def to_5(data, sn, awal, akhir):
@@ -125,19 +127,24 @@ def to_5(data, sn, awal, akhir):
         if hasattr(df, 'tipping_factor'):
             df['rain'] = df['tick'] * df['tipping_factor']
         else:
-            df['rain'] = df['tick'] * logger.tipp_fac
+            df['rain'] = df['tick'] * (logger.tipp_fac or 0.2)
     if hasattr(df, 'distance'):
         if hasattr(df, 'sensor_height') and hasattr(df, 'sensor_resolution'):
             df['wlevel'] = (df['sensor_height'] - df['distance']) * df['sensor_resolution']
         else:
             df['wlevel'] = logger.ting_son - df['distance'] * logger.son_res
     df['sampling'] = pd.to_datetime(df['sampling'], unit='s')
-    df['up_since'] = pd.to_datetime(df['up_since'], unit='s')
-    df['time_set_at'] = pd.to_datetime(df['time_set_at'], unit='s')
-    df = df.set_index('sampling')
-    df = dft.join(df)
+    #df['up_since'] = pd.to_datetime(df['up_since'], unit='s')
+    #df['time_set_at'] = pd.to_datetime(df['time_set_at'], unit='s')
+    df.set_index('sampling', inplace=True)
+    df['rain'] = df['rain'].round(1)
+    df = dft.join(df['rain'])
     df.to_csv('p_{sn}_{blth}.csv'.format(sn=sn, blth=awal.strftime('%b%Y')), index_label='sampling')
-    to_jam(df, sn, awal, akhir)
+    ds_rain = df.groupby(pd.Grouper(freq='1h')).sum()
+    ds_num = df.groupby(pd.Grouper(freq='1h')).count()
+    dfjam = pd.DataFrame({'rain': ds_rain, 'banyak': ds_num})
+    dfjam.to_csv('p_{sn}_{blth}_jam.csv'.format(sn=sn, blth=awal.strftime('%b%Y')), index_label='sampling')
+    #to_jam(df, sn, awal, akhir)
 
     
 def to_jam(dataframe, sn, awal, akhir):
@@ -164,7 +171,7 @@ def to_jam(dataframe, sn, awal, akhir):
         df = df.join(dcount, 'banyak_data')
         
     df.to_csv('p_{sn}_{blth}_jam.csv'.format(sn=sn, blth=awal.strftime('%b%Y')))
-    return df
+    #return df
 
 def to_24(data):
     '''output csv data 24 jam '''

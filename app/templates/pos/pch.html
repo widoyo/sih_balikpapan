@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container">
   <div class="row">
-    <div class="col mb-5">
+    <div class="col">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/">Home</a></li>
@@ -12,39 +12,57 @@
       <h1>Pos Curah Hujan <span class="fw-lighter">({{ poses|length }})</span><a href="../add?tipe=1" class="ms-5 btn btn-outline-secondary btn-sm">Tambah</a></h1>
     </div>
   </div>
+  <div class="row mb-4">
+    <div class="col-sm-8">
+&nbsp;
+    </div>
+    <div class="col-sm-4">
+      <div class="row mb-4">
+        <div class="col-4"><a href="{{ url_for('pos.pch') }}?s={{ _tgl.strftime('%Y/%m/%d') }}">{{ _tgl.strftime('%d %b') }}</a></div>
+        <div class="col-4 text-center fs-4">{{ tgl.strftime('%d %b %y') }}</div>
+        <div class="col-4 text-end"><a href="{{ url_for('pos.pch') }}?s={{ tgl_.strftime('%Y/%m/%d') }}">{{ tgl_.strftime('%d %b') }}</a></div>  
+    </div>
+  </div>
   <div class="row">
-    <div class="col-sm-12">
+    <div class="col-sm-8">
 <table class="table">
   <thead>
     <tr>
-      <th>No</th>
-      <th>Nama</th>
-      <th class="small">07:01 - 13:00</th>
-      <th class="small">13:01 - 19:00</th>
-      <th class="small">19:01 - 01:00</th>
-      <th class="small">01:01 - 07:00</th>
-      <th>Total Telemetri</th>
-      <th>Manual</th>
+      <th class="align-baseline">No</th>
+      <th class="align-baseline">Nama</th>
+      <th class="small">Pagi <div style="font-weight: 300;font-size: 8pt;">07:01 - 13:00</div></th>
+      <th class="small">Siang-Sore <div style="font-weight: 300;font-size: 8pt;">13:01 - 19:00</div></th>
+      <th class="small">Malam <div style="font-weight: 300;font-size: 8pt;">19:01 - 01:00</div></th>
+      <th class="small">Dini Hari <div style="font-weight: 300;font-size: 8pt;">01:01 - 07:00</div></th>
+      <th class="align-baseline">Total Telemetri</th>
+      <th class="align-baseline">Manual</th>
     </tr>
   </thead>
   <tbody>
     {% for p in poses %}
     <tr>
-      <td></td>
+      <td>{{ loop.index }}</td>
       <td><a href="/pos/{{p.id}}-{{p.nama}}">{{ p.nama }}</a></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td class="text-end rain-val">0</td>
+      <td class="text-end rain-val">0</td>
+      <td class="text-end rain-val">0</td>
+      <td class="text-end rain-val">0</td>
+      <td class="text-end rain-val">0</td>
+      <td class="text-end rain-val">0</td>
       
     </tr>
     {% endfor %}
   </tbody>
 </table>
     </div>
+    <div class="col-sm-4">
+    </div>
+</div>
   </div>
   
 </div>
+{% endblock %}
+{% block js_foot %}
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 {% endblock %}
