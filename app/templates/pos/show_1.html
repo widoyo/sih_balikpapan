@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import '_part/_macros.html' as booth %}
 {% block content %}
 <div class="container">
   <div class="row">
@@ -25,12 +26,16 @@
     </div>
     <div class="col-sm-4">
       <div class="row mb-4">
-        <div class="col-4"><a href="{{ url_for('pos.show', id=pos.id, tahun=_tgl.year, bulan=_tgl.month, tanggal=_tgl.day) }}">Before</a></div>
+        <div class="col-4"><a href="{{ url_for('pos.show', id=pos.id) }}?s={{_tgl.year}}/{{_tgl.month}}/{{_tgl.day}}">Before</a></div>
         <div class="col-4 text-center">{{ tgl.strftime('%d %b %Y') }}</div>
-        <div class="col-4 text-end"><a href="{{ url_for('pos.show', id=pos.id, tahun=tgl_.year, bulan=tgl_.month, tanggal=tgl_.day) }}">After</a></div>
+        <div class="col-4 text-end"><a href="{{ url_for('pos.show', id=pos.id)}}?s={{tgl_.strftime('%Y/%m/%d') }}">After</a></div>
       </div>
-        
-      <h2>Petugas</h2>
+      <div class="row">
+        <div class="col">
+          {% include '_part/_note.html' %}
+        </div>
+      </div>  
+      {{ booth.title('petugas')}}
     </div>
   </div>
 </div>

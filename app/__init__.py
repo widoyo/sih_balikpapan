@@ -227,7 +227,7 @@ def create_app(config_class=Config):
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if current_user.is_authenticated:
-            return redirect(url_for('index'))
+            return redirect(url_for('homepage'))
         form = LoginForm()
         if form.validate_on_submit():
             try:

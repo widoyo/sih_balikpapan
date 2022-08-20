@@ -89,10 +89,14 @@ def show_setahun(id, tahun):
                            pos=pos, thn=thn, _thn=_thn, thn_=thn_)
 
 @bp.route('/<id>/')
-@bp.route('/<id>/<int:tahun>/<int:bulan>/<int:tanggal>')
 @login_required
-def show(id, tahun, bulan, tanggal):
-    tgl = datetime(tahun, bulan, tanggal)
+def show(id):
+    sampling = request.args.get('s')
+    try:
+        tahun,bulan,tanggal = sampling.split('/')
+    except:
+        tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
+    tgl = datetime(int(tahun), int(bulan), int(tanggal))
     id = int(id.split('-')[0])
     pos = get_object_or_404(Location, (Location.id == id))
     if pos.tipe not in ('1', '2', '3'):

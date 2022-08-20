@@ -99,7 +99,7 @@ class Logger(db.Model):
     
 
 class Note(db.Model):
-    object = pw.IntegerField(unique=True)
+    object_type = pw.CharField(default='logger') # pos, daily
     object_id = pw.IntegerField()
     username = pw.CharField(max_length=35)
     content = pw.TextField()
