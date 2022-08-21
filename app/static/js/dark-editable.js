@@ -37,6 +37,7 @@ class DarkEditable{
         //priority date elements
         get_opt("value", this.element.innerHTML);
         get_opt("name", this.element.id);
+        get_opt("obj", "");
         get_opt("pk", null);
         get_opt("title", "");
         get_opt("type", "text");
@@ -116,7 +117,7 @@ class DarkEditable{
     }
 
     init_style(){
-        this.element.classList.add("dark-editable-element");
+        //this.element.classList.add("dark-editable-element");
     }
 
     init_hide_onclick(){
@@ -320,25 +321,26 @@ class DarkEditable{
         const button = document.createElement("button");
         button.type = "button";
         button.classList.add("btn", "btn-sm");
-        button.style.color = "transparent";
-        button.style.textShadow = "0 0 0 white";
+        //button.style.color = "transparent";
+        //button.style.textShadow = "0 0 0 white";
         return button;
     }
 
     createButtonSuccess(){
         const btn_success = this.createButton();
         btn_success.type = "submit";
-        btn_success.classList.add("btn-success");
+        btn_success.classList.add("btn-primary");
+        btn_success.style.color = "transparent";
+        btn_success.style.textShadow = "0 0 0 white";
         btn_success.innerHTML = "✔";
         return btn_success;
     }
 
     createButtonCancel(){
         const btn_cancel = this.createButton();
-        btn_cancel.classList.add("btn-danger");
+        btn_cancel.classList.add("btn-outline-secondary");
         const div = document.createElement("div");
         div.innerHTML = "✖";
-        div.style.transform = `rotate(45deg)`
         btn_cancel.append(div);
         btn_cancel.addEventListener("click", () => {
             this.popover.hide();
@@ -353,6 +355,7 @@ class DarkEditable{
     async ajax(new_value){
         let url = this.url;
         const form = new FormData;
+        form.append("obj", this.obj);
         form.append("pk", this.pk);
         form.append("name", this.name);
         form.append("value", new_value);
@@ -372,7 +375,7 @@ class DarkEditable{
     }
 
     error(response, newValue){
-
+        console.log(response.msg)
     }
 
     /* AJAX END */

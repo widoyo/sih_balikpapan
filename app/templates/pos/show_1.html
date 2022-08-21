@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
-{% import '_part/_macros.html' as booth %}
+{% import '_part/_booth.html' as booth %}
+{% block extra_head %}
+<link rel="stylesheet" href="/static/css/dark-editable.css"> 
+{% endblock %}
 {% block content %}
 <div class="container">
   <div class="row">
@@ -11,7 +14,7 @@
           <li class="breadcrumb-item active" aria-current="page">{{ pos.nama }}</li>
         </ol>
       </nav>
-      <h2><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span>{{ pos.nama }} <span class="fs-6 badge bg-primary rounded-pill">PCH</span></h2>
+      <h2><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span><abbr class="editable" data-obj="location" data-type="text" id="nama" data-pk="{{ pos.id }}" data-title="Nama Pos">{{ pos.nama }}</abbr> <span class="fs-6 badge bg-primary rounded-pill">PCH</span></h2>
       <span class="small">Desa</span>
       <div class="btn-group float-end" role="group">
         <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-primary">Sehari</a>
@@ -30,19 +33,49 @@
         <div class="col-4 text-center">{{ tgl.strftime('%d %b %Y') }}</div>
         <div class="col-4 text-end"><a href="{{ url_for('pos.show', id=pos.id)}}?s={{tgl_.strftime('%Y/%m/%d') }}">After</a></div>
       </div>
-      <div class="row">
-        <div class="col">
-          {% include '_part/_note.html' %}
-        </div>
-      </div>  
-      {{ booth.title('petugas')}}
+      {% if pos.logger_set %}
+      {{ booth.open('Data Logger ' ~ pos.logger_set[0].sn)|e}}
+      <p class="ps-2">Tipping Factor <i class="bi bi-info-circle-fill" data-bs-title="Tipping Factor" data-bs-toggle="popover" 
+        data-bs-content="Tipping Factor = resolusi Penakar Hujan Otomatis (Automatic Rain Gauge), biasanya bernilai 0.2 atau 0.5. Silakan periksa (konsultasikan) nilai resolusi pada ARG yang terpasang."></i> : 
+        <code><abbr class="editable" 
+          data-title="Tipping Factor" data-type="text" 
+          data-obj="logger" data-name="tipp_fac" 
+          data-pk="{{ pos.logger_set[0].id }}">
+          {{pos.logger_set[0].tipp_fac}}</abbr></code> mm 
+          </p>
+      <p></p>
+      {{ booth.close() }}
+      {% else %}
+      {{ booth.open('Data Logger')}}
+      <i>Kosong</i>
+      {{ booth.close()}}
+      {% endif %}
+      {% include '_part/_note.html' %}
+      {{ booth.open('petugas')}}
+      {{ booth.close()}}
     </div>
   </div>
 </div>
 {% endblock %}
 {% block js_foot %}
+<script src="/static/js/dark-editable.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+  const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+
+  const editable = document.querySelectorAll('.editable')
+  let i = 0;
+  for (i=0; i < editable.length; i++) {
+    new DarkEditable(editable[i], {
+      url: '/api/update',
+      success: (resp, newVal) => {
+        if (resp.status == 'error') {
+          return resp.msg
+        }
+      }
+    })
+  }
   const labels = [
     '07',
     '08',

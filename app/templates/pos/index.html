@@ -9,7 +9,7 @@
           <li class="breadcrumb-item active" aria-current="page">Pos Pengamatan</li>
         </ol>
       </nav>
-      <h1>Pos  <span class="fw-lighter">({{ poses|length }})</span><a href="add/" class="ms-5 btn btn-outline-secondary btn-sm">Tambah</a></h1>
+      <h1>Pos  <span class="fw-lighter">({{ poses|length }})</span><a href="add/" class="ms-5 fs-6 fw-light text-muted">Tambah Pos</a></h1>
     </div>
   </div>
   <div class="row">
@@ -27,7 +27,7 @@
           {% for p in poses %}
           <tr>
             <td>{{ loop.index }}</td>
-            <td><span class="badge {% if p.tipe == '1' %}bg-primary{% elif p.tipe == '2' %}bg-danger{% endif %}">{% if p.tipe == '1' %}PCH{% elif p.tipe == '2' %}PDA{% endif %}</span> <a href="/pos/{{ p.id }}-{{ p.nama }}">{{ p.nama }}</a></td>
+            <td style="max-width: 200px;" class="text-truncate"><span class="badge {% if p.tipe == '1' %}bg-primary{% elif p.tipe == '2' %}bg-danger{% endif %}">{% if p.tipe == '1' %}PCH{% elif p.tipe == '2' %}PDA{% endif %}</span> <a href="/pos/{{ p.id }}-{{ p.nama }}">{{ p.nama }}</a></td>
             <td></td>
             <td><a href="/pos/{{ p.id }}-{{ p.nama }}/edit">Edit</a></td>
           </tr>

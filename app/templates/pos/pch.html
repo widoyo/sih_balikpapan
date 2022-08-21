@@ -7,9 +7,10 @@
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/">Home</a></li>
           <li class="breadcrumb-item active" aria-current="page">Pos Curah Hujan</li>
+          <li></li>
         </ol>
       </nav>
-      <h1>Pos Curah Hujan <span class="fw-lighter">({{ poses|length }})</span><a href="../add?tipe=1" class="ms-5 btn btn-outline-secondary btn-sm">Tambah</a></h1>
+      <h1>Pos Curah Hujan <span class="fw-lighter">({{ poses|length }})</span><a href="../add?tipe=1" class="ms-5 text-muted fw-light fs-6">Tambah Pos</a></h1>
     </div>
   </div>
   <div class="row mb-4">
@@ -34,7 +35,7 @@
       <th class="small">Siang-Sore <div style="font-weight: 300;font-size: 8pt;">13:01 - 19:00</div></th>
       <th class="small">Malam <div style="font-weight: 300;font-size: 8pt;">19:01 - 01:00</div></th>
       <th class="small">Dini Hari <div style="font-weight: 300;font-size: 8pt;">01:01 - 07:00</div></th>
-      <th class="align-baseline">Total Telemetri</th>
+      <th class="align-baseline">Telemetri</th>
       <th class="align-baseline">Manual</th>
     </tr>
   </thead>
@@ -42,7 +43,7 @@
     {% for p in poses %}
     <tr>
       <td>{{ loop.index }}</td>
-      <td><a href="/pos/{{p.id}}-{{p.nama}}">{{ p.nama }}</a></td>
+      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{p.id}}-{{p.nama}}">{{ p.nama }}</a></td>
       <td class="text-end rain-val">0</td>
       <td class="text-end rain-val">0</td>
       <td class="text-end rain-val">0</td>
@@ -63,6 +64,5 @@
 </div>
 {% endblock %}
 {% block js_foot %}
-<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 {% endblock %}

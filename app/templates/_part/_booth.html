@@ -1,0 +1,10 @@
+{% macro open(title="Judul") -%}
+<div class="row mb-5">
+  <div class="col">
+    <h2 class="fs-4 fw-light">{{ title }}</h2>
+{%- endmacro %}
+
+{% macro close() -%}
+  </div>
+</div>
+{%- endmacro %}

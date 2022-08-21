@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% block extra_head %}
+{% endblock %}
 {% block content %}
 <div class="container">
   <div class="row">
@@ -10,22 +12,23 @@
           <li class="breadcrumb-item active" aria-current="page">Sehat</li>
         </ol>
       </nav>
-      <h1>Kesehatan Logger <span class="float-end"><a href="{{ url_for('logger.sehat') }}?s={{ prev_s.strftime('%Y-%m-%d') }}"><i class="bi bi-arrow-bar-left"></i></a> {{ sampling.strftime('%d') }} <span class="text-muted">{{ sampling.strftime('%b') }} {{ sampling.strftime('%Y') }}</span> <a href="{{ url_for('logger.sehat') }}?s={{ next_s.strftime('%Y-%m-%d') }}"><i class="bi bi-arrow-bar-right"></i></a></span></h1>
+      <h1>Kesehatan Logger <span class="float-end"><a href="{{ url_for('logger.sehat') }}?s={{ prev_s.strftime('%Y-%m-%d') }}"><i class="me-3 bi bi-arrow-bar-left"></i></a> {{ sampling.strftime('%d') }} <span class="text-muted fs-5 fw-light">{{ sampling.strftime('%b %Y') }}</span> <a href="{{ url_for('logger.sehat') }}?s={{ next_s.strftime('%Y-%m-%d') }}"><i class="ms-3 bi bi-arrow-bar-right"></i></a></span></h1>
       <table class="table">
         <thead>
           <tr>
             <th>Logger</th>
             {% for i in range(0, 24) %}
-            <th>{{ i }}</th>
+            <th class="jam">{{ i }}</th>
             {% endfor %}
           </tr>
         </thead>
         <tbody>
         {% for logger in logger_list %}
           <tr>
-            <td>{{ logger.sn }} <span class="text-muted">{{ logger.location.nama }}</span></td>
+            <td style="max-width: 150px;" class="text-truncate">{{ logger.sn }} 
+              <a data-bs-toggle="tooltip" data-bs-title="{{ logger.location.nama }}" title="{{ logger.location.nama }}" href="{{ url_for('pos.show', id=logger.location.id) }}" class="text-muted fs-6 fw-light">{{ logger.location.nama }}</a></td>
             {% for i in range(0, 24) %}
-            <td>{{ i }}</td>
+            <td class="num">5</td>
             {% endfor %}
           </tr>
       {% else %}
@@ -38,4 +41,18 @@
   </div>
   </div>
 </div>
+{% endblock %}
+{% block js_foot %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const nums = document.querySelectorAll('.num');
+    let i = 0;
+    console.log('start')
+    for (i=0; i<nums.length; i++) {
+      if (nums[i].textContent > 8) { nums[i].style.color = '#0a0'; }
+      else if (nums[i].textContent > 5) { nums[i].style.color = '#e90'; }
+      else { nums[i].style.color = '#d00'; }
+    }
+  });
+</script>
 {% endblock %}

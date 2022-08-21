@@ -19,17 +19,15 @@
   <tr>
     <th>SN</th>
     <th>Tipe</th>
-    <th>Lokasi / Pos</th>
-    <th>&nbsp;</th>
+    <th>Pos Pengamatan</th>
   </tr>
 </thead>
 <tbody>
   {% for l in loggers %}
   <tr>
     <td><a href="{{l.sn}}">{{ l.sn }}</a></td>
-    <td>{{ l.tipe }}</td>
+    <td>{% if l.tipe == 'arr' %}<span class="badge bg-primary rounded-pill">ARR</span>{% elif l.tipe == 'awlr' %}<span class="badge bg-danger rounded-pill">AWLR</span>{% else %}Klimat{% endif %}</td>
     <td>{{ l.location.nama }}</td>
-    <td><a href="{{ url_for('logger.edit', sn=l.sn) }}">Edit</a></td>
   </tr>
   {% else %}
   <tr>
@@ -46,8 +44,4 @@
 </div>
 {% endblock %}
 {% block js_foot %}
-  <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
-  <script>
-    const table = new simpleDatatables.DataTable("table")
-  </script>
 {% endblock %}

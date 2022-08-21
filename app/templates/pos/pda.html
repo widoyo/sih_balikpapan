@@ -9,11 +9,11 @@
           <li class="breadcrumb-item active" aria-current="page">Pos Duga Air</li>
         </ol>
       </nav>
-      <h1>Pos Duga Air <span class="fw-lighter">({{ poses|length }})</span><a href="../add?tipe=2" class="ms-5 btn btn-outline-secondary btn-sm">Tambah</a></h1>
+      <h1>Pos Duga Air <span class="fw-lighter">({{ poses|length }})</span><a href="../add?tipe=2" class="ms-5 text-muted fs-6 fw-normal">Tambah Pos</a></h1>
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-12">
+    <div class="col-sm-9">
 <table class="table">
   <thead>
     <tr>
@@ -39,7 +39,7 @@
     {% for p in poses %}
     <tr>
       <td>{{ loop.index }}</td>
-      <td><a href="/pos/{{p.id}}-{{p.nama}}">{{ p.nama }}</a></td>
+      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{p.id}}-{{p.nama}}">{{ p.nama }}</a></td>
       <td></td>
       <td></td>
       <td></td>
@@ -53,6 +53,13 @@
     {% endfor %}
   </tbody>
 </table>
+    </div>
+    <div class="col-sm-3">
+      <div class="row">
+        <div class="col-4"><a href="{{ url_for('pos.pda') }}?s={{ _tgl.strftime('%Y/%m/%d') }}">{{ _tgl.strftime('%d %b') }}</a></div>
+        <div class="col-4 text-center fs-4">{{ tgl.strftime('%d %b %y') }}</div>
+        <div class="col-4 text-end"><a href="{{ url_for('pos.pda') }}?s={{ tgl_.strftime('%Y/%m/%d') }}">{{ tgl_.strftime('%d %b') }}</a></div>    
+      </div>
     </div>
   </div>
   

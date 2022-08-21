@@ -1,17 +1,10 @@
-{% import '_part/_macros.html' as booth %}
-<div class="row">
-  <div class="col">
-    {{ booth.title('Catatan') }}
+{% import '_part/_booth.html' as booth %}
+    {{ booth.open('Catatan') }}
     <form action="/note" method="POST">
       {{ note_form.csrf_token }}
       <textarea name="note" id="note" class="form-control" cols="30" rows="3"></textarea>
     </form>
-  </div>
-</div>
-<div class="row">
-  <div class="col">
     <ul>
       <li>Satu oleh siapa</li>
     </ul>
-  </div>
-</div>
+    {{ booth.close() }}
