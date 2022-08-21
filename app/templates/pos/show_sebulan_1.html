@@ -10,7 +10,7 @@
           <li class="breadcrumb-item active" aria-current="page">{{ pos.nama }}</li>
         </ol>
       </nav>
-<h2>{{ pos.nama }}</h2>
+<h2>{{ pos.nama }} <span class="fs-6 badge bg-primary rounded-pill">PCH</span></h2>
       <span class="small">Desa</span>
       <div class="btn-group float-end" role="group">
         <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>

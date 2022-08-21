@@ -7,6 +7,12 @@ from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 
 from .models import TIPE_POS
 
+class NoteForm(FlaskForm):
+    object_type = HiddenField()
+    object_id = HiddenField()
+    content = StringField()
+    submit = SubmitField()
+    
 class ManualChForm(FlaskForm):
     location = HiddenField()
     sampling = DateField('Tanggal Data')

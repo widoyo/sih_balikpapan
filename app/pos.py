@@ -3,7 +3,7 @@ from flask import Blueprint, request, render_template, redirect, flash, abort
 from flask_login import current_user, login_required
 from playhouse.flask_utils import get_object_or_404
 from .models import Location
-from .forms import PosForm, UserForm
+from .forms import PosForm, UserForm, NoteForm
 
 bp = Blueprint('pos', __name__)
 
@@ -104,8 +104,10 @@ def show(id):
     user_form = UserForm(is_petugas=True, tenant=current_user.tenant, location=pos)
     if user_form.validate_on_submit():
         pass
+    note_form = NoteForm(object_type='location', object_id=pos.id)
     return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, 
-                           tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), user_form=user_form, show=show)
+                           tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), 
+                           user_form=user_form, note_form=note_form, show=show)
 
 
 @bp.route('/', methods=['GET', 'POST'])

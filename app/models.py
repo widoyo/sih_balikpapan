@@ -103,7 +103,8 @@ class Note(db.Model):
     object_id = pw.IntegerField()
     username = pw.CharField(max_length=35)
     content = pw.TextField()
-    created = pw.DateTimeField(default=datetime.datetime.now)
+    cdate = pw.DateTimeField(default=datetime.datetime.now)
+    mdate = pw.DateTimeField(null=True)
     
     
 class Petugas(db.Model):

@@ -23,14 +23,38 @@ def register(app):
     # The callback for when a PUBLISH message is received from the server.
     def on_message(client, userdata, msg):
         data = json.loads(msg.payload.decode('utf-8'))
-        with open('/tmp/out.txt', 'w+') as f:
-            f.write('{}\n'.format(data.get('device').split('/')[1]))
-        sn = data.get('device').split('/')[1]
-        #c.save()
-        print(msg.topic+" "+msg.payload.decode('utf-8'))
+        try:
+            sn = data.get('device').split('/')[1]
+        except IndexError:
+            click.echo('SN tidak ditemukan')
+            click.echo(data)
+            return
+        logger = Logger.get(Logger.sn==sn)
+        lid = None
+        if logger.location:
+            lid = logger.location.id
+        rain = None
+        wlevel = None
+        if data.get('tick', None) != None:
+            if logger.tipp_fac and logger.tipp_fac > 0:
+                tf = logger.tipp_fac
+            else:
+                tf = 0.2
+            rain = data.get('tick') * tf
+        if data.get('distance', None) != None:
+            wlevel = data.get('distance')
+            
+        ret = {'sn': sn, 'location_id': lid, 'sampling': datetime.fromtimestamp(data.get('sampling'))}
+        if rain: ret.update({'rain': rain, 'tick': data.get('tick')})
+        if wlevel: ret.update({'wlevel': wlevel, 'distance': data.get('distance')})
+        with open('/tmp/out.txt', 'a') as f:
+            f.write('{}\n'.format(str(ret)))
 
+    def insert_into_hourly(data):
+        click.echo(data)
+    
     @app.cli.command(cls=DaemonCLI, daemon_params={'pid_file': '/var/run/prinus_capture.pid'})
-    def prinus_capture():
+    def listen_prinus():
         logging.basicConfig(
             filename='/var/log/daemonocle_example.log',
             level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s',
@@ -119,6 +143,8 @@ def register(app):
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
         shutil.make_archive(arch_name, 'zip', root_dir=dirname)
+        if os.path.isfile(os.path.join(dest_dir, arch_name + '.zip')):
+            os.remove(os.path.join(dest_dir, arch_name + '.zip'))
         shutil.move(arch_name + '.zip', dest_dir)
         # delete p_*.csv files
         for f in os.listdir(dirname):
@@ -139,10 +165,12 @@ def register(app):
         # _end = 1648857300
         dft = pd.DataFrame(index=pd.date_range(datetime.fromtimestamp(int(_sta)), datetime.fromtimestamp(int(_end)), freq='5T'))
         click.echo('SN: {}'.format(sn))
-        rst = db.database.execute_sql("SELECT content FROM raw WHERE sn='{}' AND content->>'sampling' >= {} AND content->>'sampling' < {} ORDER BY id ".format(sn, _sta, _end))
-        data = [json.loads(r[0]) for r in rst.fetchall()]
-        if not data: return
+        rst = db.database.execute_sql("SELECT content FROM raw WHERE sn='{}' AND (content->>'sampling')::int >= {} AND (content->>'sampling')::int < {} ORDER BY id ".format(sn, _sta, _end))
+        data = [r[0] for r in rst.fetchall()]
+        click.echo('len(data): {}'.format(len(data)))
+        if len(data) == 0: return
         df = pd.DataFrame(data)
+        click.echo(df.info())
         df['sampling'] = pd.to_datetime(df['sampling'], unit='s')
         #df.drop(columns=['device', 'time_set_at', 'signal_quality', 'pressure', 'altitude', 'temperature'], inplace=True)
         df.set_index('sampling', inplace=True)

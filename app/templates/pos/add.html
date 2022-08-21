@@ -20,16 +20,27 @@
         <div class="mb-3">
           <label for="nama" class="form-label">{{ form.nama.label }}</label>
           <input type="text" name="nama" id="nama" class="form-control" aria-describedby="nama-help">
-          <div id="nama-help" class="form-text"></div>
+          <div id="nama-help" class="form-text">Minimum <b>4</b> huruf, contoh: <i>"PCH Sukasenang"</i>, <i>"PDA Kaso"</i></div>
         </div>
       <div class="mb-3">
         {{ form.tipe.label(class="form-label") }}
         {{form.tipe(class='form-select')}}
         <div class="form-text" id="tipe-help"><b>PCH</b> : Pos Curah Hujan (ARR), <b>PDA</b>: Pos Duga Air (AWLR)</div>
       </div>
-      <input class="btn btn-primary" type="submit" value="Tambahkan">
+      <input class="btn btn-primary" id="submit" type="submit" value="Tambahkan" disabled> <a href="javascript:history.back()" class="btn btn-light">Batal</a>
       </form>      
     </div>  
   </div>
 </div>
+{% endblock %}
+{% block js_foot %}
+<script>
+  const isEmpty = str => !(str.trim().length >= 4)
+  document.getElementById("nama").addEventListener("input", function() {
+    console.log(this.value)
+    const submit = document.getElementById("submit")
+    if (isEmpty(this.value)) { submit.setAttribute("disabled", "true") }
+    else { submit.removeAttribute("disabled")}
+  })
+</script>
 {% endblock %}

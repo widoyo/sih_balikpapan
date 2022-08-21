@@ -11,7 +11,7 @@
           <li class="breadcrumb-item active" aria-current="page">{{ pos.nama }}</li>
         </ol>
       </nav>
-      <h1><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span>{{ pos.nama }} <span class="fs-6 badge bg-danger rounded-pill">PDA</span></h1>
+      <h2><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span>{{ pos.nama }} <span class="fs-6 badge bg-danger rounded-pill">PDA</span></h2>
       <div class="btn-group float-end" role="group">
         <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-primary">Sehari</a>
         <a href="{{ url_for('pos.show', id=pos.id) }}{{ tgl.year }}/{{ tgl.month }}" class="btn btn-outline-primary">Sebulan</a>
