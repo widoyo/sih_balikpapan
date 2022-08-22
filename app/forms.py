@@ -1,7 +1,7 @@
 import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SelectField, BooleanField, PasswordField
-from wtforms import HiddenField, SubmitField, DateField, FloatField
+from wtforms import HiddenField, SubmitField, DateField, DateTimeField, FloatField
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 
@@ -21,9 +21,10 @@ class ManualChForm(FlaskForm):
     
 class ManualTmaForm(FlaskForm):
     location = HiddenField()
-    sampling = StringField()
-    tma = StringField()
-    submit = SubmitField()
+    sampling = DateField('Tanggal Data')
+    waktu = StringField()
+    tma = StringField('TMA (meter)')
+    submit = SubmitField('Kirim')
     
 class DataDownloadForm(FlaskForm):
     location = SelectField(validators=[])

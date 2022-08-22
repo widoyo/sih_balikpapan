@@ -37,8 +37,11 @@
                 <td>{{ u.tz }}</td>
                 {% endif %}
                 <td>{{ u.hp or '-' }}</td>
-                <td>{% if u.location %}{{ u.location.nama }}{% else %}-{% endif %}</td>
-                <td>{{ u.last_seen }}</td>
+                <td style="max-width:200px" class="text-truncate">{% if u.location %}
+                  {% if u.location.tipe == '1' %}<span class="badge bg-primary rounded-pill">ARR</span>
+                  {% elif u.location.tipe == '2' %}<span class="badge bg-danger rounded-pill">AWLR</span>
+                  {% else %}<span class="badge bg-success rounded-pill">Klimatologi</span>{% endif %} {{ u.location.nama }}{% else %}-{% endif %}</td>
+                <td class="last_seen">{{ u.last_seen }}</td>
                 <td><a href="{{ url_for('user.set_password', username=u.username) }}">Atur Password</a></td>
               </tr>
               {% endfor %}  
@@ -50,4 +53,15 @@
     </div>
   </div>
 </div>
+{% endblock %}
+{% block js_foot %}
+<script>
+  document.addEventListener("DOMContentLoaded", function(){
+    dayjs.extend(window.dayjs_plugin_relativeTime);
+    const jams = document.querySelectorAll('.last_seen');
+    for (let i=0;i < jams.length;i++) {
+      jams[i].textContent = dayjs(jams[i].textContent).fromNow();
+    }
+  });
+</script>
 {% endblock %}

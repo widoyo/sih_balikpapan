@@ -261,7 +261,7 @@ def create_app(config_class=Config):
             if not current_user.tenant:
                 return render_template('home_master.html', data_upload_form=data_upload_form)
             else:
-                if current_user.location_id:
+                if current_user.location_id: # Petugas Lapangan
                     template_name = 'home_petugas_{}.html'.format(current_user.location.tipe)
                     next_month = (today.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
                     prev_month = (today.replace(day=1) - datetime.timedelta(days=2)).replace(day=1)
@@ -271,19 +271,29 @@ def create_app(config_class=Config):
                         form = ManualChForm(sampling=(today - datetime.timedelta(days=1)), \
                             location=current_user.location.id)
                     elif current_user.location.tipe == '2':
-                        form = ManualTmaForm(sampling=(today - datetime.timedelta(days=1)), \
+                        form = ManualTmaForm(sampling=today, \
                             location=current_user.location.id)
                     else:
                         form = ManualChForm()
                     form.location.data = current_user.location_id
                     errors = None
                     if form.validate_on_submit():
-                        data = {'sampling': int(form.sampling.data.strftime('%s')), 'rain': float(form.ch.data), 'petugas': current_user.username}
-                        db.database.execute_sql("INSERT INTO raw_manual (content, location_id) VALUES (?, ?)", (json.dumps(data), current_user.location_id))
+                        sampling = datetime.datetime.combine(form.sampling.data, datetime.datetime.min.time())
+                        data = {'sampling': int(sampling.strftime('%s')), 'petugas': current_user.username}
+                        daily_default = {'petugas': current_user.username, 'sn': '-'}
+                        if hasattr(form, 'ch'):
+                            data.update({'m_rain': float(form.ch.data)})
+                            daily_default.update({'m_rain': float(form.ch.data)})
+                        elif hasattr(form, 'tma'):
+                            m_level_field = 'm_wlevel_{}'.format(form.waktu.data)
+                            data.update({m_level_field: float(form.tma.data)})
+                            daily_default.update({m_level_field: float(form.tma.data)})
+                        db.database.execute_sql("INSERT INTO raw_manual (content, location_id) VALUES (?, ?)", 
+                                                (json.dumps(data), current_user.location_id))
                         flash('Sukses menambah data')
+                        
                         new_daily, created = Daily.get_or_create(sampling=form.sampling.data, \
-                            location=current_user.location, defaults={'m_rain': float(form.ch.data), \
-                                'petugas': current_user.username, 'sn': '-'})
+                            location=current_user.location, defaults=daily_default)
                         new_daily.save()
                         return redirect('/')
                     else:

@@ -66,6 +66,23 @@
         {% endwith %}
       </div>
     </header>
+    <div class="bg-info">
+      <div class="container mb-4">
+        {% with msgs = get_flashed_messages() %}
+        {% if msgs %}
+        <div class="row alert alert-dismissible" role="alert">
+          <div class="col py-3">
+            {% for m in msgs %}
+            <li>{{ m }}</li>
+            {% endfor %}
+            <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
+  
+          </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+      </div>  
+    </div>
     <div class="content">
       <div class="container">
         <div class="row">
@@ -153,7 +170,7 @@
 </button>
 <div class="container-fluid bg-light border-top py-5 my-5">
 <div class="container">
-<footer class="row row-cols-5">
+<footer class="row">
   <div class="col">
     <img src="/static/img/prinus.png" alt="prinus" class="mb-3" style="width:30px;">
     <p class="text-muted">© 2021 prinus reka telemetri</p>

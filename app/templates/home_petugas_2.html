@@ -55,30 +55,111 @@
         </nav>        
       </div>
     </header>
+    <div class="bg-info">
+      <div class="container mb-4">
+        {% with msgs = get_flashed_messages() %}
+        {% if msgs %}
+        <div class="row alert alert-dismissible" role="alert">
+          <div class="col py-3">
+            {% for m in msgs %}
+            <li>{{ m }}</li>
+            {% endfor %}
+            <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
+  
+          </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+      </div>  
+    </div>
     <div class="content">
       <div class="container">
         <div class="row">
           <div class="col">
-            <h1><span class="d-inline d-md-none">&nbsp;</span>{{ current_user.location.nama }}</h1>
+            <h2><span class="d-inline d-md-none">&nbsp;</span>{{ current_user.location.nama }}</h2>
             <span class="small">Desa</span>
             <div class="my-4" style="height:300px;border: solid 1px #ccc"></div>
           </div>
         </div>
         <div class="row">
           <div class="col-md-6">
-            <form action="/manual" method="POST">
+            <a href="#manual-form" data-bs-toggle="collapse" aria-controls="manual-form">Tambah Data Manual</a>
+            <form action="/" method="POST" id="manual-form" class="collapse p-3 mb-5 bg-light rounded-2">
+              <h2>Tambah Data Manual</h2>
               {{ manual_form.hidden_tag() }}
-              <div class="mb-3">
-                {{ manual_form.tma.label}}
-                {{ manual_form.tma(class="form-control") }}
+              <div class="row mb-3">
+                <div class="col">
+                    {{ manual_form.sampling.label }}
+                  {% if manual_form.sampling.errors %}
+                  {{ manual_form.sampling(type="date", class="form-control is-invalid") }}
+                  {% for e in manual_form.sampling.errors %}
+                  <li>{{ e }}</li>
+                  {% endfor %}
+                  {% else %}
+                  {{ manual_form.sampling(type="date", class="form-control") }}
+                  {% endif %}
+                  <p class="form-text"></p>
+                  <div class="row">
+                    <div class="col">
+                      <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check" name="waktu" id="waktu_pagi" value="pa" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="waktu_pagi">Pagi</label>
+                      
+                        <input type="radio" class="btn-check" name="waktu" id="waktu_siang" value="si" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="waktu_siang">Siang</label>
+                      
+                        <input type="radio" class="btn-check" name="waktu" id="waktu_sore" value="so" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="waktu_sore">Sore</label>
+                      </div>
+                  </div>
+                  </div>
+                </div>
+                <div class="col">
+                  {{ manual_form.tma.label}}
+                  {% if manual_form.tma.errors %}
+                  {{ manual_form.tma(class="form-control is-invalid text-end", type="number", step="0.1") }}
+                  {% for e in manual_form.tma.errors %}
+                  <li>{{ e }}</li>
+                  {% endfor %}
+                  {% else %}
+                  {{ manual_form.tma(class="form-control text-end") }}
+                  <p class="form-text">Hasil baca Peilscaal</p>
+                  {% endif %}  
+                </div>
               </div>
-              <div class="mb-3">
-                {{ manual_form.sampling.label }}
-                {{ manual_form.sampling(type="date", class="form-control") }}
-              </div>
+              <hr>
+              <div class="pt-3">{{ manual_form.submit(class='btn btn-primary px-5') }} <a href="#manual-form" data-bs-toggle="collapse" aria-controls="manual-form" class="btn btn-outline-secondary px-4">Batal</a></div>
             </form>
           </div>
-          <div class="col-md-6"><h2>Data Curah Hujan</h2></div>
+          <div class="col-md-6">
+            <h2>TMA {{ today.strftime('%b') }} <span class="text-muted">{{ today.strftime('%Y') }}</span></h2>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>TMA Pa(meter)</th>
+                  <th>TMA Siang(meter)</th>
+                  <th>TMA Sore(meter)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for d in daily_set %}
+                <tr>
+                  <td>{{ d.sampling }}</td>
+                  <td>{{ d.m_wlevel_pa }}</td>
+                  <td>{{ d.m_wlevel_si }}</td>
+                  <td>{{ d.m_wlevel_so }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="2">Belum ada data <a href="#manual-form" data-bs-toggle="collapse" aria-controls="#manual-form">Tambahkan baru</a></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+
+          </div>
         </div>
       </div>
     </div>
@@ -88,10 +169,10 @@
 </button>
 <div class="container-fluid bg-light border-top py-5 my-5">
 <div class="container">
-<footer class="row row-cols-5">
+<footer class="row">
   <div class="col">
-    <img src="/static/img/prinus.png" alt="prinus" class="mb-3" style="width:30px;">
-    <p class="text-muted">© 2021 prinus reka telemetri</p>
+    <img src="/static/img/prinus.png" alt="prinus" class="mb-3 me-3" style="width:30px;">
+    <span class="text-muted">© 2021 prinus reka telemetri</span>
   </div>
 
 </footer>

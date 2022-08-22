@@ -194,10 +194,15 @@ class Daily(db.Model):
     sq_a = pw.IntegerField(null=True)
     batt_a = pw.FloatField(null=True) # dalam volt
     m_rain = pw.FloatField(default=0) # Manual Rain, satuan mm
-    m_wlevel = pw.FloatField(null=True) # Manual TMA, satuan Meter
+    m_wlevel_pa = pw.FloatField(null=True) # Manual TMA, satuan Meter Pagi
+    m_wlevel_si = pw.FloatField(null=True) # Manual TMA, satuan Meter Siang
+    m_wlevel_so = pw.FloatField(null=True) # Manual TMA, satuan Meter Sore
     petugas = pw.CharField(max_length=100, null=True) # username petugas, bisa comma separated
     num_start = pw.IntegerField(default=0) # banyaknya restart primabot pada jam ini
     content = pw.TextField(null=True)
+    
+    class Meta:
+        order_by = ['-sampling']
         
 
 class Hourly(db.Model):
