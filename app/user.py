@@ -37,8 +37,9 @@ def add():
                                                password=form.password.data,
                                                tenant=form.tenant.data)
         new_user.set_password(form.password.data)
-        flash('Sukses menambah %s' % new_user.username, 'success')
-        return redirect(url_for('user'))
+        new_user.save()
+        flash('Sukses menambah %s'.format(new_user.username), 'success')
+        return redirect(url_for('user.index'))
     else:
         errors = form.errors
     return render_template('user/add.html', form=form, errors=errors)
