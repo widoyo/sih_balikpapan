@@ -1,4 +1,5 @@
 import os
+import time
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timedelta
@@ -131,6 +132,8 @@ def register(app):
         if not os.path.exists(dirname):
             os.mkdir(dirname)
         tenant = Tenant.get(int(tid))
+        os.environ['TZ'] = tenant.timezone
+        time.tzset()
         for l in tenant.logger_set:
             make_file(l.sn, bl)
         

@@ -1,3 +1,7 @@
+.editable {
+  cursor: pointer !important;
+}
+
 .dark-editable-element{
     border-bottom: dashed 1px #0088cc;
     text-decoration: none;
