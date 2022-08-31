@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
+import pytz
 from flask import Blueprint, request, render_template, redirect, flash, abort
 from flask_login import current_user, login_required
 from playhouse.flask_utils import get_object_or_404
-from .models import Location
+from .models import Location, Logger, Raw
 from .forms import PosForm, UserForm, NoteForm
 
 bp = Blueprint('pos', __name__)
@@ -96,18 +97,28 @@ def show(id):
         tahun,bulan,tanggal = sampling.split('/')
     except:
         tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
-    tgl = datetime(int(tahun), int(bulan), int(tanggal))
+    tgl = datetime(int(tahun), int(bulan), int(tanggal)).astimezone()
+    _sta = tgl.replace(hour=7).astimezone(pytz.timezone(current_user.tenant.timezone))
+    _end = (_sta + timedelta(days=1)).replace(hour=6, minute=55)
+    if _end > datetime.now().astimezone(pytz.timezone(current_user.tenant.timezone)):
+        _end = datetime.now().astimezone(pytz.timezone(current_user.tenant.timezone))
     id = int(id.split('-')[0])
     pos = get_object_or_404(Location, (Location.id == id))
     if pos.tipe not in ('1', '2', '3'):
         return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
+    raws = []
+    if pos.logger_set:
+        logger = pos.logger_set[0]
+        raws = Raw.select(Raw.content).where((Raw.sn==logger.sn) & (Raw.content['sampling'].between(
+            int(_sta.strftime('%s')), int(_end.strftime('%s'))))).order_by(Raw.id)
+        
     user_form = UserForm(is_petugas=True, tenant=current_user.tenant, location=pos)
     if user_form.validate_on_submit():
         pass
     note_form = NoteForm(object_type='location', object_id=pos.id)
     return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, 
                            tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), 
-                           user_form=user_form, note_form=note_form, show=show)
+                           user_form=user_form, note_form=note_form, show=show, raws=raws)
 
 
 @bp.route('/', methods=['GET', 'POST'])

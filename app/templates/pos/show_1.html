@@ -26,6 +26,11 @@
   <div class="row">
     <div class="col-sm-8"><p class="text-center">{{ tgl.strftime('%d %b %Y') }}</p>
       <canvas id="chart_hujan_hari"></canvas>
+      <code>
+      {% for r in raws %}
+      {{ r.content.tick }}
+      {% endfor %}
+    </code>
     </div>
     <div class="col-sm-4">
       <div class="row mb-4">
@@ -47,7 +52,14 @@
       {{ booth.close() }}
       {% else %}
       {{ booth.open('Data Logger')}}
-      <i>Kosong</i>
+      <i>Belum ada data logger terpasang.</i>
+      <div class="mt-3">
+        <p>Data Logger belum terpasang</p>
+        {% for l in free_logger %}
+        {{ l.sn }}
+        {% endfor %}
+  
+      </div>
       {{ booth.close()}}
       {% endif %}
       {% include '_part/_note.html' %}

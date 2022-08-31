@@ -11,12 +11,12 @@ from flask import json
 import pandas as pd
 import numpy as np
 
-from app.models import db, Tenant, Logger, User, Location
+from app.models import db, Tenant, Logger, User, Location, Raw
 
 def register(app):
     def on_connect(client, userdata, flags, rc):
         click.echo("Connected with result code "+str(rc))
-
+        #insert_into_hourly()
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
         client.subscribe([('bbws-bsolo', 0), ('bws-sul2', 0), ('uns-ft', 0), ('pusair-bdg', 0), ('cimancis', 0), ('bwss2', 0), ('bwss4', 0), ('bws-kal3', 0), ('bws-sul1', 0), ('bws-kal1', 0), ('bws-pb', 0), ('bwss5', 0), ('upbbsolo', 0), ('bwsnt1', 0), ('bws-kal2', 0), ('btsungai', 0), ('bws-kal4', 0), ('float1', 0), ('dpublpp', 0), ('pdamgresik', 0), ('wikahutama', 0), ('bbwssul3', 0), ('purinilam', 0), ('palangkaraya', 0), ('pusdajatim', 0), ('dpuprklaten', 0), ('bwskal5', 0), ('bbwscitanduy', 0)])
@@ -26,18 +26,24 @@ def register(app):
         data = json.loads(msg.payload.decode('utf-8'))
         try:
             sn = data.get('device').split('/')[1]
+            Raw.create(content=data, sn=sn)
         except IndexError:
             click.echo('SN tidak ditemukan')
             click.echo(data)
             return
-        logger = Logger.get(Logger.sn==sn)
+        click.echo(sn)
+        
+        try:
+            logger = Logger.get(Logger.sn==sn)
+        except:
+            logger = None
         lid = None
-        if logger.location:
+        if logger and logger.location:
             lid = logger.location.id
         rain = None
         wlevel = None
-        if data.get('tick', None) != None:
-            if logger.tipp_fac and logger.tipp_fac > 0:
+        if 'tick' in data:
+            if logger and logger.tipp_fac and logger.tipp_fac > 0:
                 tf = logger.tipp_fac
             else:
                 tf = 0.2
@@ -46,15 +52,16 @@ def register(app):
             wlevel = data.get('distance')
             
         ret = {'sn': sn, 'location_id': lid, 'sampling': datetime.fromtimestamp(data.get('sampling'))}
-        if rain: ret.update({'rain': rain, 'tick': data.get('tick')})
+        if rain != None: ret.update({'rain': rain, 'tick': data.get('tick')})
         if wlevel: ret.update({'wlevel': wlevel, 'distance': data.get('distance')})
         with open('/tmp/out.txt', 'a') as f:
             f.write('{}\n'.format(str(ret)))
 
-    def insert_into_hourly(data):
-        click.echo(data)
+    def insert_into_hourly():
+        pass
     
-    @app.cli.command(cls=DaemonCLI, daemon_params={'pid_file': '/var/run/prinus_capture.pid'})
+    @app.cli.command(cls=DaemonCLI, daemon_params={'pid_file': '/var/run/prinus_capture.pid',
+                                                   'work_dir': '.'})
     def listen_prinus():
         logging.basicConfig(
             filename='/var/log/daemonocle_example.log',
@@ -114,15 +121,7 @@ def register(app):
                 content[head] = val
             msg += content
 
-    @app.cli.command('ke_jam')
-    @click.option('--jam', help='Jam data yang akan diproses')
-    @click.argument('sn')
-    def ringkas_ke_jam(jam, sn):
-        if not jam:
-            jam = datetime.now().replace(minute=0, second=0) - timedelta(hours=1)
-        click.echo(sn)
-        click.echo(jam)
-    
+
     @app.cli.command('make-downloadable')
     @click.argument('tid')
     @click.option('--bl', help='tahun-bl')
@@ -132,10 +131,9 @@ def register(app):
         if not os.path.exists(dirname):
             os.mkdir(dirname)
         tenant = Tenant.get(int(tid))
-        os.environ['TZ'] = tenant.timezone
-        time.tzset()
+        tz = tenant.timezone or 'Asia/Jakarta'
         for l in tenant.logger_set:
-            make_file(l.sn, bl)
+            make_file(l.sn, bl, tz)
         
         # create zip file
         if len(os.listdir(dirname)) < 1:
@@ -153,7 +151,7 @@ def register(app):
         for f in os.listdir(dirname):
             os.remove(dirname + '/' + f)
                     
-    def make_file(sn, bl):
+    def make_file(sn, bl, tz):
         '''Browsing data (table 'raw')'''
         #sn = '1910-28'
         try:
@@ -165,6 +163,9 @@ def register(app):
         _sta = int(bulan.strftime('%s'))
         # _sta = 1648767600
         _end = (bulan + timedelta(days=32)).replace(day=1, hour=6, minute=55).strftime('%s')
+        today = datetime.now()
+        if bulan.month == today.month:
+            _end = today.strftime('%s')
         # _end = 1648857300
         dft = pd.DataFrame(index=pd.date_range(datetime.fromtimestamp(int(_sta)), datetime.fromtimestamp(int(_end)), freq='5T'))
         click.echo('SN: {}'.format(sn))

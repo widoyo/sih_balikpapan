@@ -7,6 +7,7 @@ from flask_login import UserMixin
 from bcrypt import checkpw, hashpw, gensalt
 import peewee as pw
 from playhouse.flask_utils import FlaskDB
+from playhouse.sqlite_ext import JSONField
 
 db = FlaskDB()
 
@@ -14,7 +15,7 @@ TIPE_POS = [(1, 'PCH'), (2, 'PDA'), (3, 'Klimatologi')]
 TIPE_POS_COLOR = [(1, 'primary'), (2, 'danger'), (3, 'success')]
 
 class Raw(db.Model):
-    content = pw.TextField()
+    content = JSONField()
     received = pw.DateTimeField()
     sn = pw.CharField(max_length=10)
     
