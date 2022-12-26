@@ -1,8 +1,10 @@
 import datetime
+from flask import json
 from flask import Blueprint, request, render_template
 from flask_login import current_user, login_required
+import pandas as pd
 
-from .models import Logger, Location
+from .models import Logger, Location, Raw
 from .forms import LoggerForm
 
 bp = Blueprint('logger', __name__)
@@ -32,6 +34,9 @@ def edit(sn):
 @login_required
 def show(sn):
     logger = Logger.get(Logger.sn==sn)
+    sampling = request.args.get('s', '')
+    rst = Raw.select().where(Raw.sn==sn).limit(288).order_by(Raw.id.desc())
+    df = pd.DataFrame([json.loads(r.content) for r in rst])
     return render_template('logger/show.html', logger=logger)
 
 @bp.route('/sehat')

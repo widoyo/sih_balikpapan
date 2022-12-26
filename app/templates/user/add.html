@@ -10,20 +10,12 @@
           <li class="breadcrumb-item active" aria-current="page">Tambah</li>
         </ol>
       </nav>
-      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-      <div class="alert alert-primary" role="alert">
-        <ul>
-          {% for m in messages %}
-            <li>{{ m }}</li>
-          {% endfor %}  
-        </ul>
+      {% if errors %}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ errors }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
       {% endif %}
-      {% endwith %}
-      {% for e in errors %}
-      <li>{{ e }}</li>
-      {% endfor %}
     <h1>Tambah User</h1>
       </div>
       </div>
@@ -34,6 +26,7 @@
       <div class="mb-3">
         <label for="username" class="form-label">{{ form.username.label }}</label>
         {{ form.username(class='form-control') }}
+        <div class="form-text">Minimal 4 karakter (huruf kecil atau angka)</div>
       </div>
       <div class="mb-3">
         <label for="" class="form-label">{{ form.password.label }}</label>
@@ -42,10 +35,24 @@
       <div class="mb-3">
         <label for="location" class="form-label">POS Hidrologi </label>
         {{ form.location(class='form-select') }}
+        <div class="form-text">Jika Pos belum terdaftar, <a href="/pos/add/?tipe=1">menambah Pos Curah Hujan</a> atau <a href="/pos/add/?tipe=2">Pos Duga Air</a></div>
       </div>
-      <div class="mb-3">{{ form.submit(class='btn btn-primary') }}</div>
+      <div class="mb-3">{{ form.submit(value='Tambahkan', class='btn btn-primary', disabled=True) }} <a href="javascript:history.back()" class="btn btn-light">Batal</a></div>
       </form>
     </div>
   </div>
       </div>
+{% endblock %}
+{% block js_foot %}
+<script>
+  document.getElementById('username').addEventListener('input', (e) => {
+    if (e.target.value.length < 4) {
+      document.getElementById('submit').disabled = true;
+    } else {
+      document.getElementById('submit').disabled = false;
+    }
+//    document.getElementById('username1').value = e.target.value.replace(/^[0-9a-zA-Z]/g, '')
+    console.log(e.target.value);
+  });
+</script>
 {% endblock %}

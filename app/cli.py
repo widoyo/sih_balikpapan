@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+import pytz
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timedelta
 import shutil
@@ -11,11 +12,12 @@ from flask import json
 import pandas as pd
 import numpy as np
 
-from app.models import db, Tenant, Logger, User, Location, Raw
+from app.models import db, Tenant, Logger, User, Location, Raw, Hourly, Daily
 
 def register(app):
     def on_connect(client, userdata, flags, rc):
         click.echo("Connected with result code "+str(rc))
+        client.app_logger.info("Connected: " + str(rc))
         #insert_into_hourly()
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
@@ -26,8 +28,8 @@ def register(app):
         data = json.loads(msg.payload.decode('utf-8'))
         try:
             sn = data.get('device').split('/')[1]
-            Raw.create(content=data, sn=sn)
         except IndexError:
+            client.app_logger.info('SN tidak ditemukan: ' + data.get('device'))
             click.echo('SN tidak ditemukan')
             click.echo(data)
             return
@@ -57,8 +59,6 @@ def register(app):
         with open('/tmp/out.txt', 'a') as f:
             f.write('{}\n'.format(str(ret)))
 
-    def insert_into_hourly():
-        pass
     
     @app.cli.command(cls=DaemonCLI, daemon_params={'pid_file': '/var/run/prinus_capture.pid',
                                                    'work_dir': '.'})
@@ -67,10 +67,10 @@ def register(app):
             filename='/var/log/daemonocle_example.log',
             level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s',
         )
-        logger = logging.getLogger(__name__)
+        app_logger = logging.getLogger(__name__)
         #app = create_app(Config)
         client = mqtt.Client()
-        client.enable_logger(logger)
+        client.enable_logger(app_logger)
         client.on_connect = on_connect
         client.on_message = on_message
         client.connect('mqtt.prinus.net', 14983, 60)
@@ -221,9 +221,11 @@ def register(app):
             ds_wlevel_a = df.groupby(pd.Grouper(freq='1h'))['distance'].mean()
             ds_wlevel_n = df.groupby(pd.Grouper(freq='1h'))['distance'].max()
             ds_wlevel_x = df.groupby(pd.Grouper(freq='1h'))['distance'].min()
+            ds_wlevel_s = df.groupby(pd.Grouper(freq='1h'))['distance'].std()
             ds_wlevel_a = ds_wlevel_a.map(lambda x: (ting_son - (x * son_res)) / 100.0, na_action='ignore').round(2)
             ds_wlevel_x = ds_wlevel_x.map(lambda x: (ting_son - (x * son_res)) / 100.0, na_action='ignore').round(2)
             ds_wlevel_n = ds_wlevel_n.map(lambda x: (ting_son - (x * son_res)) / 100.0, na_action='ignore').round(2)
+            ds_wlevel_s = ds_wlevel_s.map(lambda x: (ting_son - (x * son_res)) / 100.0, na_action='ignore').round(2)
         
         # kemas output ke file
         fname = 'pbot/p_{lokasi}_{sn}_{blth}.csv'.format(lokasi=nama_lokasi, sn=sn, blth=bulan.strftime('%b%Y'))
@@ -255,7 +257,7 @@ def register(app):
         #sn = '1910-28'
         try:
             logger = Logger.get(Logger.sn==sn)
-        except Logger.DoesNotExits:
+        except Logger.DoesNotExist:
             logger = None
         t,b = bl.split('-')
         bulan = datetime(int(t), int(b), 1, 7)
@@ -265,8 +267,11 @@ def register(app):
         # _end = 1648857300
         dft = pd.DataFrame(index=pd.date_range(datetime.fromtimestamp(int(_sta)), datetime.fromtimestamp(int(_end)), freq='5T'))
         
-        rst = db.database.execute_sql("SELECT content FROM raw WHERE sn='{}' AND content->>'sampling' >= {} AND content->>'sampling' < {} ORDER BY id ".format(sn, _sta, _end))
-        data = [json.loads(r[0]) for r in rst.fetchall()]
+        rst = db.database.execute_sql("SELECT content FROM raw WHERE sn='{}' AND (content->>'sampling')::INTEGER >= {} AND (content->>'sampling')::INTEGER < {} ORDER BY id ".format(sn, _sta, _end))
+        for r in rst.fetchall():
+            click.echo(r[0])
+        data = []
+        #data = [json.loads(r[0]) for r in rst.fetchall()]
         if not data: return
         df = pd.DataFrame(data)
         df['sampling'] = pd.to_datetime(df['sampling'], unit='s')
@@ -345,12 +350,14 @@ def register(app):
     def list_logger(slug=None):
         '''Menampilkan daftar logger'''
         if slug:
+            
             tenant = Tenant.get(Tenant.slug==slug)
             for l in tenant.logger_set.order_by(Logger.sn):
                 click.echo("{}\t{}".format(l.tipe, l.sn))
             return
         else:
-            for l in Logger.select():
+            for l in Logger.select().order_by(Logger.sn):
+                
                 click.echo("{}\t{}".format(l.tipe, l.sn))
             return
         
@@ -378,13 +385,35 @@ def register(app):
         for t in rst:
             click.echo("{:>3}\t{}\t{}".format(t.id, t.slug, t.nama))
 
-    @app.cli.command('periodik')
-    def test_hitungan_pandas():
-        mydata = []
-        click.echo('mytest')
-
+    @app.cli.command('sehat')
+    @click.option('--sn', help='SN primabot')
+    @click.option('--s', help='Sampling: 2022-01-31')
+    def test_hitungan_pandas(sn='2103-5', s=''):
+        '''Menampilkan data 1 sn 1 hari'''
+        logger = Logger.get(Logger.sn==sn)
+        tenant = logger.tenant
+        _sta = datetime(2022,10,14, 6).astimezone(pytz.timezone(logger.tenant.timezone))
+        _end = datetime(2022,10,15,7).astimezone(pytz.timezone(logger.tenant.timezone))
+        sql = '''SELECT content from raw WHERE sn in (%s) AND (content->>'sampling')::bigint >= %s AND (content->>'sampling')::bigint <= %s ORDER BY id'''
+        rst = db.database.execute_sql(sql, (','.join([l.sn for l in tenant.logger_set]), (_sta - _sta.utcoffset()).strftime('%s'), (_end - _end.utcoffset()).strftime('%s')))
+        dft = pd.DataFrame(index=pd.date_range(_sta, end=_end, freq='5T', tz=pytz.timezone(logger.tenant.timezone)))
+        df = pd.DataFrame([r[0] for r in rst.fetchall()])
+        df['sampling'] = pd.to_datetime(df['sampling'], unit='s', utc=True).map(lambda x: x.tz_convert(logger.tenant.timezone))
+        df.set_index('sampling', inplace=True)
+        df = dft.join(df)
+        ds_num = df.groupby(pd.Grouper(freq='1h'))['battery'].count()
+        ds_rain = df.groupby(pd.Grouper(freq='1h'))['tick'].sum()
+        ds_rain = ds_rain.map(lambda x: x * 0.2, na_action='ignore').round(1)
+        out = {}
+        for i, o in ds_num.items():
+            out = {i: [o]}
+        for i, o in ds_rain.items():
+            click.echo(i)
+            click.echo(ds_num[i])
+            click.echo(o)
+            
     @app.cli.command('ps')
-    def ps():
+    def ps(msg={}):
         '''Memproses data dari primabot'''
         '''
         ids = [20540350, 20540352, 20540353, 20540354, 20540355]
@@ -394,9 +423,12 @@ def register(app):
         for r in rst.fetchall():
             ps_rec(r[0])
         '''
-        s = '{"device": "primaBot/2002-2/0.6", "sampling": 1657612200, "distance": 4692, "signal_quality": 31, "battery": 9.96, "up_since": 1642763400, "time_set_at": 1657600500, "temperature": 40.66, "pressure": 994.12, "altitude": 160.51, "sensor": "Maxbotix"}'
-        data = json.loads(s)
-        click.echo(data.get('device'))
+        num = 1000
+        i = 0
+        for m in Raw.select(Raw.content).order_by(Raw.id.desc()).limit(num):
+            click.echo(i)
+            i += 1
+            ps_rec(m.content.replace("'", "\""))
             
     def ps_rec(msg):
         d = json.loads(msg)
@@ -405,23 +437,47 @@ def register(app):
             sn = d['device'].split('/')[1]
         except IndexError:
             return
-        click.echo("{} pada {}".format(sn, sampling))
-        logger = Logger.get(Logger.sn==sn)
-        click.echo(logger.location)
+        out = dict(sn=sn, sampling=sampling)
+        #click.echo("{} pada {}".format(sn, sampling))
+        #logger = Logger.get(Logger.sn==sn)
+        #click.echo(logger.location)
+        #get_Hourly
         if 'tick' in d:
             tipping_factor = 0.2
             if 'tipping_factor' in d:
                 tipping_factor = d['tipping_factor']
-            click.echo('tick: {} * {}'.format(d['tick'], tipping_factor))
-            
+            out.update({'tick': d['tick']})
+            #click.echo('tick: {} * {}'.format(d['tick'], tipping_factor))
+        if 'temperature' in d:
+            out.update({'temperature': d['temperature']})
+        if 'humidity' in d:
+            out.update({'humidity': d['humidity']})
+        if 'win_speed' in d:
+            out.update({'wind_speed': d['wind_speed']})
+        if 'wind_direction' in d:
+            out.update({'wind_direction': d['wind_direction']})
+        if 'sun_radiation' in d:
+            out.update({'sun_radiation': d['sun_radiation']})
         if 'distance' in d:
+            out.update({'distance': d['distance']})
             sensor_height = 0
             sensor_resolution = 0
             if 'sensor_height' in d:
                 sensor_height = d['sensor_height']
             if 'sensor_resolution' in d:
                 sensor_resolution = d['sensor_resolution']
-            click.echo('dist: {} {} {}'.format(d['distance'], sensor_height, sensor_resolution))
+            #click.echo('dist: {} {} {}'.format(d['distance'], sensor_height, sensor_resolution))
             #click.echo('distance: {}, sensor_height: {}, sensor_resolution: {}'.format(d['distance'], d['sensor_height'], d['sensor_resolution']))
         #click.echo(datetime.fromtimestamp(d['sampling']))
+        if 'wl_scale' in d:
+            out.update({'wl_scale': d['wl_scale']})
+            # long map(long x, long in_min, long in_max, long out_min, long out_max) {
+            #   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+            # }
+            # in_min = 0, out_min = 1023 (atmega 328p)
+            # out_min = 0 (dasar sungai)
+            # out_max = Muka Air Maksimum (config by user)
+            # 
+ 
+        click.echo(out)
         

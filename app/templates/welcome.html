@@ -26,45 +26,35 @@
     </style>
   </head>
   <body>
-    <div class="container-fluid mb-4 border-bottom">
-      <div class="row">
-        <div class="col">
-          <div class="container">
-            <div class="row">
-              <div class="col">
-                <img src="/static/img/prinus.png" alt="prinus" class="mb-3" style="width:30px;"><span class="ms-3 fs-2">prinus</span>
-              </div>
-            </div>
+    <div class="container">
+      <div class="px-4 py-5 my-5 text-center">
+        <img class="d-block mx-auto mb-4" src="/static/img/prinus.png" alt="" width="72">
+        <h1 class="display-6 fw-light">Login</h1>
+        {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+      {% endfor %}
+      <div class="col-lg-6 mx-auto">
+        <form method="POST" action="/login" class="p-4 p-md-5 border rounded-3 bg-light">
+          {{ form.hidden_tag() }}
+          <div class="form-floating mb-3">
+            <input type="text" name="username" class="form-control" id="floatingInput" placeholder="username">
+            <label for="floatingInput">Username</label>
           </div>
+          <div class="form-floating mb-3">
+            <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password">
+            <label for="floatingPassword">Password</label>
           </div>
-      </div>
-    </div>
-<div class="container">
-  <div class="row">
-    <div class="col-sm-6">
-    </div>
-    <div class="col-sm-6">
-      <h3>Log in ke prinus</h3>
-      <form method="POST" action="/login" class="p-4 p-md-5 border rounded-3 bg-light">
-        {{ form.hidden_tag() }}
-        <div class="form-floating mb-3">
-          <input type="text" name="username" class="form-control" id="floatingInput" placeholder="username">
-          <label for="floatingInput">Username</label>
-        </div>
-        <div class="form-floating mb-3">
-          <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password">
-          <label for="floatingPassword">Password</label>
-        </div>
-        <div class="mb-3">
-          <button class="w-100 btn btn-lg btn-primary" type="submit">Login</button>
-        </div>
-        <hr>
-        <p>&copy; 2019 - 2022 prinus</p>
+          <div class="mb-3">
+            <button class="w-100 btn btn-lg btn-primary" type="submit">Login</button>
+          </div>
+          <hr>
+          <p>&copy; 2019 - 2022 prinus</p>
       </form>
-
-    </div>
-  </div>
-</div>
+      </div>
+        
+          </div>
+        </div>
+      
 <!-- Explanation -->
 
     <!-- Optional JavaScript; choose one of the two! -->

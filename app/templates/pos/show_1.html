@@ -24,20 +24,20 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-8"><p class="text-center">{{ tgl.strftime('%d %b %Y') }}</p>
+    <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show', id=pos.id) }}?s={{_tgl.strftime('%Y/%m/%d') }}" class="me-5 btn btn-light"><i class="bi bi-chevron-left"></i></a> {{ tgl.strftime('%d %b %Y') }} <a href="{{ url_for('pos.show', id=pos.id)}}?s={{tgl_.strftime('%Y/%m/%d') }}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
       <canvas id="chart_hujan_hari"></canvas>
       <code>
-      {% for r in raws %}
-      {{ r.content.tick }}
+      {% for i,b in raws.items() %}
+      {{ i }} {{ b }}
+      {% endfor %}
+    </code>
+    <code>
+      {% for i,b in rains.items() %}
+      {{ i }} {{ b }}
       {% endfor %}
     </code>
     </div>
     <div class="col-sm-4">
-      <div class="row mb-4">
-        <div class="col-4"><a href="{{ url_for('pos.show', id=pos.id) }}?s={{_tgl.year}}/{{_tgl.month}}/{{_tgl.day}}">Before</a></div>
-        <div class="col-4 text-center">{{ tgl.strftime('%d %b %Y') }}</div>
-        <div class="col-4 text-end"><a href="{{ url_for('pos.show', id=pos.id)}}?s={{tgl_.strftime('%Y/%m/%d') }}">After</a></div>
-      </div>
       {% if pos.logger_set %}
       {{ booth.open('Data Logger ' ~ pos.logger_set[0].sn)|e}}
       <p class="ps-2">Tipping Factor <i class="bi bi-info-circle-fill" data-bs-title="Tipping Factor" data-bs-toggle="popover" 
@@ -62,16 +62,14 @@
       </div>
       {{ booth.close()}}
       {% endif %}
-      {% include '_part/_note.html' %}
-      {{ booth.open('petugas')}}
-      {{ booth.close()}}
     </div>
   </div>
 </div>
 {% endblock %}
 {% block js_foot %}
 <script src="/static/js/dark-editable.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <script>
   const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
   const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
@@ -117,18 +115,125 @@
 
   const data = {
     labels: labels,
+
     datasets: [{
-      label: 'Curah Hujan',
+      label: 'Curah Hujan per jam',
       backgroundColor: 'rgb(13, 110, 253)',
       borderColor: 'rgb(255, 99, 132)',
-      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 2, 20, 30, 45],
+      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 2, 12, 3, 2],
     }]
   };
 
   const config = {
     type: 'bar',
     data: data,
-    options: {}
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Jam',
+            align: 'end'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'mm',
+            align: 'end'
+          }
+        }
+      },
+      plugins: {
+        autocolors: false,
+        annotation: {
+          annotations: {
+            line1: {
+              type: 'line',
+              yMin: 1,
+              yMax: 1,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            line2: {
+              type: 'line',
+              yMin: 5,
+              yMax: 5,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            line2: {
+              type: 'line',
+              yMin: 5,
+              yMax: 5,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            line3: {
+              type: 'line',
+              yMin: 10,
+              yMax: 10,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            line4: {
+              type: 'line',
+              yMin: 20,
+              yMax: 20,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            label1: {
+              type: 'label',
+              position: 'start',
+              padding: 4,
+              xValue: 0,
+              yValue: 1.4,
+              color: 'rgba(96, 96, 96, 0.7)',
+              backgroundColor: 'rgba(128, 128, 128, 0.05)',
+              content: 'hujan sangat ringan'
+            },
+            label2: {
+              type: 'label',
+              position: 'start',
+              xValue: 0,
+              yValue: 4.8,
+              color: 'rgba(96, 96, 96, 0.7)',
+              backgroundColor: 'rgba(128, 128, 128, 0.05)',
+              content: 'hujan ringan'
+            },
+            label3: {
+              type: 'label',
+              position: 'start',
+              xValue: 0,
+              yValue: 9.8,
+              color: 'rgba(96, 96, 96, 0.7)',
+              backgroundColor: 'rgba(128, 128, 128, 0.05)',
+              content: 'hujan sedang'
+            },
+            label4: {
+              type: 'label',
+              position: 'start',
+              xValue: 0,
+              yValue: 19.8,
+              color: 'rgba(96, 96, 96, 0.7)',
+              backgroundColor: 'rgba(128, 128, 128, 0.05)',
+              content: 'hujan lebat'
+            },
+            label5: {
+              type: 'label',
+              position: 'start',
+              xValue: 0,
+              yValue: 22.5,
+              color: 'rgba(96, 96, 96, 0.7)',
+              backgroundColor: 'rgba(128, 128, 128, 0.05)',
+              content: 'hujan sangat lebat'
+            }
+
+          }
+        }
+      }
+    }
   };
   const myChart = new Chart(
     document.getElementById('chart_hujan_hari'),

@@ -1,6 +1,8 @@
 import datetime
 import base64
 import os
+import json
+import pandas as pd
 from enum import unique
 from flask import url_for
 from flask_login import UserMixin
@@ -8,6 +10,7 @@ from bcrypt import checkpw, hashpw, gensalt
 import peewee as pw
 from playhouse.flask_utils import FlaskDB
 from playhouse.sqlite_ext import JSONField
+#from playhouse.postgres_ext import JSONField
 
 db = FlaskDB()
 
@@ -15,7 +18,7 @@ TIPE_POS = [(1, 'PCH'), (2, 'PDA'), (3, 'Klimatologi')]
 TIPE_POS_COLOR = [(1, 'primary'), (2, 'danger'), (3, 'success')]
 
 class Raw(db.Model):
-    content = JSONField()
+    content = pw.TextField()
     received = pw.DateTimeField()
     sn = pw.CharField(max_length=10)
     
@@ -43,9 +46,15 @@ class Tenant(db.Model):
             'nama': self.nama,
             '_links': {
                 'self': url_for('api.get_tenant', id=self.id)
-            }
+            },
+            '_logger_set': [l.to_dict() for l in self.logger_set],
+            '_location_set': [l.to_dict() for l in self.location_set]
         }
         return data
+    
+    def hujan_tanggal(self, tgl=datetime.datetime.today()):
+        
+        return tgl
     
 class Das(db.Model):
     nama = pw.CharField(max_length=35, unique=True)
@@ -54,6 +63,19 @@ class Das(db.Model):
     modified_at = pw.DateTimeField(null=True)
     alur = pw.TextField(null=True)
     
+    def to_dict(self):
+        data = {'nama': self.nama, 'tenant': self.tenant.nama, 'id': self.id}
+        return data
+    
+    def from_dict(self, data, new=False):
+        self.nama = data
+
+class Ws(db.Model):
+    nama = pw.CharField(max_length=35, unique=True)
+    tenant = pw.ForeignKeyField(Tenant)
+    created_at = pw.DateTimeField(default=datetime.datetime.now)
+    modified_at = pw.DateTimeField(null=True)
+    alur = pw.TextField(null=True)
     
 class Location(db.Model):
     nama = pw.CharField(max_length=35)
@@ -70,6 +92,14 @@ class Location(db.Model):
     sh = pw.FloatField(null=True) # batas siaga Hijau dalam meter
     sk = pw.FloatField(null=True) # batas siaga Kuning dalam meter
     sm = pw.FloatField(null=True) # batas siaga Merah dalam meter
+    desa = pw.CharField(max_length=30, null=True)
+    kecamatan = pw.CharField(max_length=30, null=True)
+    kabupaten = pw.CharField(max_length=30, null=True)
+    
+    def to_dict(self):
+        aa = 'nama-ll-tipe-elevasi-latest_sampling-latest_up-sh-sk-sm'.split('-')
+        data = dict([(l, getattr(self, l)) for l in aa])
+        return data
     
     def str_tipe(self):
         try:
@@ -98,6 +128,20 @@ class Logger(db.Model):
     modified = pw.DateTimeField(null=True)
     son_res = pw.FloatField(null=True)
     
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'sn': self.sn,
+            'tipe': self.tipe,
+            'tenant_id': self.tenant and self.tenant.id or None,
+            'latest': datetime.datetime.now(),
+            'up_since': datetime.datetime.now(),
+            'first': datetime.datetime.now(),
+            '_links': {
+                'self': url_for('api.get_logger', sn=self.sn)
+            }
+        }
+        return data
 
 class Note(db.Model):
     object_type = pw.CharField(default='logger') # pos, daily
@@ -211,6 +255,7 @@ class Hourly(db.Model):
     location = pw.ForeignKeyField(Location, null=True)
     sn = pw.CharField(max_length=10)
     sampling = pw.DateTimeField() # tanggal dan jam. Menit & Detik = 0
+    tick = pw.IntegerField(default=0) # nilai asli
     rain = pw.IntegerField(default=0)
     wlevel_a = pw.FloatField(null=True) # average
     wlevel_x = pw.FloatField(null=True) # Max

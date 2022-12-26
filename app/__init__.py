@@ -15,13 +15,16 @@ from flask_login import LoginManager, login_required, login_user, logout_user, c
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
+from flask_debugtoolbar import DebugToolbarExtension
 
 from app.forms import ManualChForm, ManualTmaForm, UserForm, DataUploadForm, DataDownloadForm
-from app.models import Location, Logger, Offline
+from app.models import Location, Logger, Offline, Ws, Das
 from app import errors
 import pandas as pd
 
 from config import Config
+
+debug_toolbar = DebugToolbarExtension()
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()
@@ -92,6 +95,8 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     db.init_app(app)
     
+    debug_toolbar.init_app(app)
+    
     app.register_blueprint(pos.bp, url_prefix='/pos')
     app.register_blueprint(logger.bp, url_prefix='/logger')
     app.register_blueprint(user.bp, url_prefix='/user')
@@ -116,7 +121,14 @@ def create_app(config_class=Config):
             else:
                 os.environ['TZ'] = 'Asia/Jakarta'
             time.tzset()
-
+    
+    @app.route('/ws', methods=['POST'])
+    @login_required
+    def create_ws():
+        new_ws = Ws(nama=request.form.get('nama'), tenant=current_user.tenant)
+        new_ws.save()
+        return redirect('/pos')
+        
     @app.route('/download', methods=['GET', 'POST'])
     @login_required
     def data_download():
@@ -154,6 +166,7 @@ def create_app(config_class=Config):
             error = []
             if len(lines) >= 3:
                 # temukan logger
+                loc = '-'
                 try:
                     sn = lines[0].decode('utf-8').split(' ')[0].split('/')[1]
                 except IndexError:
@@ -168,8 +181,6 @@ def create_app(config_class=Config):
                         tenant_id = None
                     if logger.location:
                         loc = logger.location.nama
-                    else:
-                        loc = '-'
                 except Logger.DoesNotExist:
                     error.append('SN: <b>{}</b> belum terdaftar. Data tetap diupload'.format(sn))
                 banyak = len(lines) - 2
@@ -288,8 +299,8 @@ def create_app(config_class=Config):
                             m_level_field = 'm_wlevel_{}'.format(form.waktu.data)
                             data.update({m_level_field: float(form.tma.data)})
                             daily_default.update({m_level_field: float(form.tma.data)})
-                        db.database.execute_sql("INSERT INTO raw_manual (content, location_id) VALUES (?, ?)", 
-                                                (json.dumps(data), current_user.location_id))
+                        db.database.execute_sql('INSERT INTO raw_manual (content, location_id) VALUES (%(cnt)s, %(loc)s)', 
+                                                {'cnt': json.dumps(data), 'loc': current_user.location_id})
                         flash('Sukses menambah data')
                         
                         new_daily, created = Daily.get_or_create(sampling=form.sampling.data, \
@@ -302,12 +313,16 @@ def create_app(config_class=Config):
                         daily_set=daily_set, manual_form=form, today=today, next_month=next_month, \
                             prev_month=prev_month, errors=errors)
                 list_petugas = User.select().where(User.tenant==current_user.tenant).order_by(User.username)
-                loggers_count = Logger.select().where(Logger.tenant==current_user.tenant).count()
-                form_user = UserForm()
+                sns = [l.sn for l in current_user.tenant.logger_set]
+                #sql = f"SELECT id,content->>'tick', content->>'distance' AS distance, content->>'sampling' FROM raw WHERE sn IN ({','.join('?' for _ in sns)}) AND distance IS NOT NULL LIMIT 3000"
+                #rst = db.database.execute_sql(sql, sns)
+                #for r in rst:
+                #    print(r)
+                #loggers_count = Logger.select().where(Logger.tenant==current_user.tenant).count()
                 return render_template('home_tenant.html', 
-                                       loggers_count=loggers_count, 
+                                       loggers_count=current_user.tenant.logger_set.count(), 
                                        list_petugas=list_petugas,
-                                       user_form=form_user, data_upload_form=data_upload_form)
+                                       data_upload_form=data_upload_form)
         else:
             return render_template('welcome.html', form=LoginForm())
     

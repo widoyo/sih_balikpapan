@@ -19,24 +19,81 @@
           <tr>
             <th>No</th>
             <th>Nama Pos</th>
-            <th>Banyak Data</th>
-            <th>Data Terbaru</th>
+            <th></th>
+            <th>Data</th>
           </tr>
         </thead>
         <tbody>
           {% for p in poses %}
           <tr>
             <td>{{ loop.index }}</td>
-            <td style="max-width: 200px;" class="text-truncate"><span class="badge {% if p.tipe == '1' %}bg-primary{% elif p.tipe == '2' %}bg-danger{% endif %}">{% if p.tipe == '1' %}PCH{% elif p.tipe == '2' %}PDA{% endif %}</span> <a href="/pos/{{ p.id }}-{{ p.nama }}">{{ p.nama }}</a></td>
+            <td style="max-width: 200px;" class="text-truncate"><span class="badge {% if p.tipe == '1' %}bg-primary{% elif p.tipe == '2' %}bg-danger{% endif %}">{% if p.tipe == '1' %}PCH{% elif p.tipe == '2' %}PDA{% endif %}</span> <a href="/pos/{{ p.id }}-{{ p.nama }}">{{ p.nama }}</a>
+              <div>ds <abbr class="editable" data-obj='location' data-name='desa' data-type='text' data-pk='{{p.id}}' data-title='Desa' data-value='{{ p.desa }}'>{{ p.nama }}</abbr>, kec. <abbr class="editable" data-type='text' data-pk='{{p.id}}' data-obj='location' data-title='Kecamatan' data-name='kecamatan'>{{ p.kecamatan }}</abbr>, kab. <abbr class="editable" data-type='text' data-pk='{{p.id}}' data-obj='location' data-title='Kabupaten' data-name='kabupaten'>{{ p.kabupaten}}</abbr></div>
+            </td>
+            <td><abbr class="editable" data-obj='location' data-name='ll' data-type='text' data-pk='{{ p.id }}'>{{ p.ll or 'latlng'}}</abbr></td>
             <td></td>
-            <td><a href="/pos/{{ p.id }}-{{ p.nama }}/edit">Edit</a></td>
           </tr>
-          
           {% endfor %}
         </tbody>
       </table>
     </div>
-    <div class="col-sm-4"></div>
+    <div class="col-sm-4">
+      <h2>Wilayah Sungai</h2>
+      <form id="form_ws" action="/ws" method="POST">
+        <input class="form-control" type="text" name="nama">
+        <input class="btn btn-primary" type="submit" value="Tambah">
+      </form>
+      {% for w in ws_list %}
+      {{ w.nama }}
+      {% endfor %}
+      <h2>DAS</h2>
+      <form id="form_das" action="/das" method="POST">
+        <input class="form-control" type="text" name="nama">
+        <input type="submit" value="Tambah">
+      </form>
+      {% for w in das_list %}
+      {% endfor %}
+    </div>
   </div>
 </div>
+{% endblock %}
+{% block js_foot %}
+<script src="/static/js/dark-editable.js"></script>
+<script>
+const editable = document.querySelectorAll('.editable')
+let i = 0;
+for (i=0; i < editable.length; i++) {
+  new DarkEditable(editable[i], {
+    url: '/api/update',
+    success: (resp, newVal) => {
+      if (resp.status == 'error') {
+        return resp.msg
+      }
+    }
+  })
+}
+
+const sendDataWs = () => {
+  let data = new FormData();
+  form = document.getElementById('form_ws');
+  data.append("nama", form.elements[0].value);
+
+  fetch('/api/ws', {
+    method: 'POST',
+    body: data
+  })
+  .then((result) => {
+    if (result.status != 201) { 
+      throw new Error("Bad Server response");
+      return result.text();
+    }
+  })
+  .then((response) => {
+    console.log(response);
+  })
+  .catch((error) => {console.log(error); });
+
+  return false;
+}
+</script>
 {% endblock %}

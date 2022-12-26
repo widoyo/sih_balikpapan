@@ -17,15 +17,22 @@
     <div class="col-sm-6">
       <form action="." method="POST">
         {{ form.hidden_tag() }}
-        <div class="mb-3">
-          <label for="nama" class="form-label">{{ form.nama.label }}</label>
+        <div class="mb-4">
+          <label for="nama" class="form-label">{{ form.nama.label }} <span class="text-danger">*</span></label>
           <input type="text" name="nama" id="nama" class="form-control" aria-describedby="nama-help">
           <div id="nama-help" class="form-text">Minimum <b>4</b> huruf, contoh: <i>"PCH Sukasenang"</i>, <i>"PDA Kaso"</i></div>
         </div>
-      <div class="mb-3">
-        {{ form.tipe.label(class="form-label") }}
+      <div class="mb-4">
+        <label for="tipe" class="form-label">{{ form.tipe.label }} <span class="text-danger">*</span></label>
         {{form.tipe(class='form-select')}}
         <div class="form-text" id="tipe-help"><b>PCH</b> : Pos Curah Hujan (ARR), <b>PDA</b>: Pos Duga Air (AWLR)</div>
+      </div>
+      <div class="optional-field">
+        <div class="mb-4">
+          <label for="ll" class="form-label">{{ form.ll.label() }}</label>
+          {{ form.ll(class="form-control") }}
+          <div class="form-text" id="tipe-help">Lat-Lon, contoh: <i>"-7.5614404, 110.788759"</i></div>
+        </div>
       </div>
       <input class="btn btn-primary" id="submit" type="submit" value="Tambahkan" disabled> <a href="javascript:history.back()" class="btn btn-light">Batal</a>
       </form>      

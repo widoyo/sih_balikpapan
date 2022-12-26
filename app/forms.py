@@ -39,22 +39,21 @@ class DasForm(FlaskForm):
     nama = StringField()
     
 class PasswordForm(FlaskForm):
-    username = StringField()
     new_password = StringField()
     
 class UserForm(FlaskForm):
-    username = StringField()
-    password = PasswordField()
+    username = StringField('Username')
+    password = PasswordField('Password')
     location = SelectField()
     tenant = HiddenField()
     submit = SubmitField('Kirim')
     
 
 class PosForm(FlaskForm):
-    nama = StringField()
+    nama = StringField('Nama')
     tipe = SelectField(choices=TIPE_POS)
-    elevasi = IntegerField()
-    ll = StringField()
+    elevasi = IntegerField('Elevasi (mdpl)')
+    ll = StringField('Koordinat Pos Pada Peta')
     
     
 class TenantForm(FlaskForm):

@@ -20,26 +20,22 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-8"><p class="text-center">{{bln.strftime('%b %Y')}}</p>
+    <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
       <canvas id="chart_hujan_hari"></canvas>
     </div>
     <div class="col-sm-4">
-      <div class="row mb-4">
-        <div class="col-3"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}">Sebelum</a></div>
-        <div class="col-6 text-center"><h3 class="">{{bln.strftime('%b %Y')}}</h3></div>
-        <div class="col-3 text-end"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}">Sesudah</a></div>
-      </div>
-      
+      <p>CH sebulan</p>
       <p>Dasarian (10 harian)</p>
       <p>HTH</p>
-      <p>CH sebulan</p>
       <p>Download</p>
     </div>
   </div>
 </div>
 {% endblock %}
 {% block js_foot %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
 <script>
   const labels = [
     '01',
@@ -77,7 +73,7 @@
   const data = {
     labels: labels,
     datasets: [{
-      label: 'Curah Hujan',
+      label: 'Curah Hujan per Hari',
       backgroundColor: 'rgb(13, 110, 253)',
       borderColor: 'rgb(255, 99, 132)',
       data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 2, 20, 30, 45],
@@ -87,7 +83,117 @@
   const config = {
     type: 'bar',
     data: data,
-    options: {}
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Tanggal',
+            align: 'end'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'mm',
+            align: 'end'
+          }
+        }
+      },
+      plugins: {
+        autocolors: false,
+        annotation: {
+          annotations: {
+            line1: {
+              type: 'line',
+              yMin: 5,
+              yMax: 5,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            line2: {
+              type: 'line',
+              yMin: 20,
+              yMax: 20,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            line2: {
+              type: 'line',
+              yMin: 50,
+              yMax: 50,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            line3: {
+              type: 'line',
+              yMin: 100,
+              yMax: 100,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            line4: {
+              type: 'line',
+              yMin: 20,
+              yMax: 20,
+              borderColor: 'rgb(255, 99, 132)',
+              borderWidth: 0.5,
+            },
+            vline1: {
+              type: 'line',
+              xMin: 9,
+              xMax: 9,
+              borderColor: 'rgba(255, 99, 132, 0.5)',
+              borderWidth: 10,
+            },
+            vline2: {
+              type: 'line',
+              xMin: 19,
+              xMax: 19,
+              borderColor: 'rgba(255, 99, 132, 0.5)',
+              borderWidth: 10,
+            },
+            label1: {
+              type: 'label',
+              position: 'start',
+              xValue: 0,
+              yValue: 7,
+              content: 'hujan sangat ringan'
+            },
+            label2: {
+              type: 'label',
+              position: 'start',
+              xValue: 0,
+              yValue: 20,
+              content: 'hujan ringan'
+            },
+            label3: {
+              type: 'label',
+              position: 'start',
+              xValue: 0,
+              yValue: 50,
+              content: 'hujan sedang'
+            },
+            label4: {
+              type: 'label',
+              position: 'start',
+              xValue: 0,
+              yValue: 100,
+              content: 'hujan lebat'
+            },
+            label5: {
+              type: 'label',
+              position: 'start',
+              xValue: 0,
+              yValue: 120,
+              content: 'hujan sangat lebat'
+            }
+
+          }
+        }
+      }
+
+    }
   };
   const myChart = new Chart(
     document.getElementById('chart_hujan_hari'),
