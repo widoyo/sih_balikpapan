@@ -12,8 +12,8 @@
           <li class="breadcrumb-item active" aria-current="page">Sehat</li>
         </ol>
       </nav>
-      <h1>Kesehatan Logger <span class="float-end"><a href="{{ url_for('logger.sehat') }}?s={{ prev_s.strftime('%Y-%m-%d') }}"><i class="me-3 bi bi-arrow-bar-left"></i></a> {{ sampling.strftime('%d') }} <span class="text-muted fs-5 fw-light">{{ sampling.strftime('%b %Y') }}</span> <a href="{{ url_for('logger.sehat') }}?s={{ next_s.strftime('%Y-%m-%d') }}"><i class="ms-3 bi bi-arrow-bar-right"></i></a></span></h1>
-      <table class="table">
+      <h1>Kesehatan Logger <span class="float-end"><a class="btn btn-light" href="{{ url_for('logger.sehat') }}?s={{ prev_s.strftime('%Y-%m-%d') }}"><i class="me-3 bi bi-chevron-left"></i></a> {{ sampling.strftime('%d') }} <span class="text-muted fs-5 fw-light">{{ sampling.strftime('%b %Y') }}</span> <a class="btn btn-light" href="{{ url_for('logger.sehat') }}?s={{ next_s.strftime('%Y-%m-%d') }}"><i class="ms-3 bi bi-chevron-right"></i></a></span></h1>
+      <table class="table border-top">
         <thead>
           <tr>
             <th>Logger</th>

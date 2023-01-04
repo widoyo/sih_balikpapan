@@ -122,8 +122,9 @@ def show(id):
     ds_rain = pd.Series()
     if pos.logger_set:
         logger = pos.logger_set[0]
-        sql = "SELECT content from raw WHERE sn = ? AND content->>'sampling' >= ? AND content->>'sampling' <= ?"
+        sql = "SELECT content from raw WHERE sn = ? AND (content->>'sampling')::INTEGER >= ? AND (content->>'sampling')::INTEGER <= ?"
         rst = db.database.execute_sql(sql, (logger.sn, _sta.strftime('%s'), _end.strftime('%s')))
+        print(dir(rst))
         #raws = Raw.select(Raw.content).where(Raw.sn==logger.sn).limit(288).order_by(Raw.id)
         df = pd.DataFrame([r[0] for r in rst.fetchall()])
         print(logger.sn)

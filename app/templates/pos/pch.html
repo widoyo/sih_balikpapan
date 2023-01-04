@@ -18,15 +18,15 @@
 &nbsp;
     </div>
     <div class="col-sm-4">
-      <div class="row mb-4">
-        <div class="col-4"><a href="{{ url_for('pos.pch') }}?s={{ _tgl.strftime('%Y/%m/%d') }}">{{ _tgl.strftime('%d %b') }}</a></div>
-        <div class="col-4 text-center fs-4">{{ tgl.strftime('%d %b %y') }}</div>
-        <div class="col-4 text-end"><a href="{{ url_for('pos.pch') }}?s={{ tgl_.strftime('%Y/%m/%d') }}">{{ tgl_.strftime('%d %b') }}</a></div>  
-    </div>
   </div>
   <div class="row">
-    <div class="col-sm-9">
-<table class="table">
+    <div class="col-sm-8">
+      <div class="row mb-4">
+        <div class="col-4 text-end"><a class="btn btn-light" href="{{ url_for('pos.pch') }}?s={{ _tgl.strftime('%Y/%m/%d') }}"><i class="bi bi-chevron-left"></i></a></div>
+        <div class="col-4 text-center fs-4">{{ tgl.strftime('%d %b %y') }}</div>
+        <div class="col-4 text-start"><a class="btn btn-light" href="{{ url_for('pos.pch') }}?s={{ tgl_.strftime('%Y/%m/%d') }}"><i class="bi bi-chevron-right"></i></a></div>  
+    </div>
+<table class="table border-top">
   <thead>
     <tr>
       <th class="align-baseline">No</th>
@@ -36,7 +36,7 @@
       <th class="small">Malam <div style="font-weight: 300;font-size: 8pt;">19:01 - 01:00</div></th>
       <th class="small">Dini Hari <div style="font-weight: 300;font-size: 8pt;">01:01 - 07:00</div></th>
       <th class="align-baseline">Telemetri</th>
-      <th class="align-baseline">Manual</th>
+      <th class="align-baseline">Manual<div style="font-weight: 300;font-size: 8pt;">oleh Pengamat Pos</div></th>
     </tr>
   </thead>
   <tbody>
@@ -56,7 +56,7 @@
   </tbody>
 </table>
     </div>
-    <div class="col-sm-3">
+    <div class="col-sm-4">
     </div>
 </div>
   </div>

@@ -36,7 +36,7 @@ def show(sn):
     logger = Logger.get(Logger.sn==sn)
     sampling = request.args.get('s', '')
     rst = Raw.select().where(Raw.sn==sn).limit(288).order_by(Raw.id.desc())
-    df = pd.DataFrame([json.loads(r.content) for r in rst])
+    df = pd.DataFrame([json.loads(r.content.replace('\'', '"')) for r in rst])
     return render_template('logger/show.html', logger=logger)
 
 @bp.route('/sehat')
