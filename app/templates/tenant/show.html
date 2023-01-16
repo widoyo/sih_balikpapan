@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active"><a href="/tenant">Tenant</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ tenant.nama }}</li>
+        </ol>
+      </nav>
+      <h1>{{ tenant.nama }}</h1>
+      </div>
+      </div>
+  <div class="row">
+    <div class="col-md-8">
+      Logger
+      <table class="table">
+        <tr>
+          <th>SN</th>
+          <th>Tipe</th>
+          <th>Terakhir</th>
+          <th>Banyak</th>
+          <th>Lokasi, WS, Das</th>
+        </tr>
+        {% for l in tenant.logger_set %}
+        <tr>
+          <td>{{ l.sn }}</td>
+          <td>{{ l.tipe }}</td>
+          <td></td>
+          <td></td>
+          <td>{% if l.location %}{{ l.location.nama }}, {{ l.location.ws.nama }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </table>    
+    </div>
+    <div class="col-md-4">
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title">User & Petugas</h5>
+  </div>
+  <div class="card-body">
+    {% for u in tenant.user_set %}
+    {{ u.username }}
+    {% endfor %}
+  </div>
+</div>
+    </div>
+  </div>
+      </div>
+{% endblock %}

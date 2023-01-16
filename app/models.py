@@ -88,6 +88,7 @@ class Location(db.Model):
     latest_sampling = pw.DateTimeField(null=True)
     latest_up = pw.DateTimeField(null=True)
     das = pw.ForeignKeyField(Das, null=True)
+    ws =  pw.ForeignKeyField(Ws, null=True)
     wilayah = pw.CharField(null=True)
     sh = pw.FloatField(null=True) # batas siaga Hijau dalam meter
     sk = pw.FloatField(null=True) # batas siaga Kuning dalam meter
@@ -128,6 +129,9 @@ class Logger(db.Model):
     modified = pw.DateTimeField(null=True)
     son_res = pw.FloatField(null=True)
     
+    class Meta:
+        order_by = ['id']
+        
     def to_dict(self):
         data = {
             'id': self.id,
@@ -254,16 +258,19 @@ class Hourly(db.Model):
     '''Data per jam, kompilasi dari 5 menitan'''
     location = pw.ForeignKeyField(Location, null=True)
     sn = pw.CharField(max_length=10)
-    sampling = pw.DateTimeField() # tanggal dan jam. Menit & Detik = 0
-    tick = pw.IntegerField(default=0) # nilai asli
-    rain = pw.IntegerField(default=0)
-    wlevel_a = pw.FloatField(null=True) # average
-    wlevel_x = pw.FloatField(null=True) # Max
-    wlevel_n = pw.FloatField(null=True) # Min
-    num_data = pw.IntegerField(default=0) # banyak data
-    sq_a = pw.IntegerField(null=True) # rerata
-    batt_a = pw.FloatField(null=True) # rerata
-    num_start = pw.IntegerField(default=0) # banyaknya restart primabot pada jam ini
+    sampling = pw.DateTimeField(help_text='tanggal dan jam. Menit & Detik = 0') # tanggal dan jam. Menit & Detik = 0
+    tick = pw.IntegerField(default=0, help_text='akumulasi tick') # nilai akumulasi tick
+    rain = pw.IntegerField(default=0, help_text='akumulasi tick X tipp_factor') # akumulasi tick X tipp_factor
+    distance = pw.IntegerField(null=True, help_text='distance pada jam') # distance pada jam
+    distance_x = pw.IntegerField(null=True, help_text='Max') # distance max
+    distance_n = pw.IntegerField(null=True, help_text='Min') # distance min
+    wlevel_a = pw.FloatField(null=True, help_text='Rerata') # average
+    wlevel_x = pw.FloatField(null=True, help_text='Max') # Max
+    wlevel_n = pw.FloatField(null=True, help_text='Min') # Min
+    num_data = pw.IntegerField(default=0, help_text='banyak data sejam') # banyak data
+    sq_a = pw.IntegerField(null=True, help_text='rerata SQ') # rerata
+    batt_a = pw.FloatField(null=True, help_text='rerata batt') # rerata
+    num_start = pw.IntegerField(default=0, help_text='banyaknya restart primabot pada jam ini') # banyaknya restart primabot pada jam ini
     content = pw.TextField(null=True)
     
     

@@ -14,12 +14,22 @@
         <thead>
           <tr>
             <th>Nama</th>
+            <th>Num Loggers</th>
+            <th>Lokasi</th>
+            <th>Users</th>
+            <th>WS</th>
+            <th>DAS</th>
           </tr>
         </thead>
         <tbody>
           {% for t in tenants %}
           <tr>
-            <td>{{ t.nama }}</td>
+            <td><a href="/tenant/{{ t.id }}">{{ t.nama }}</a> <i>{{ t.slug }}</i></td>
+            <td><a href="/tenant/{{ t.id }}/logger">{{ t.logger_set.count() }}</a></td>
+            <td><a href="/tenant/{{ t.id }}/pos">{{ t.location_set.count() }}</a></td>
+            <td>{{ t.user_set| length }}</td>
+            <td>{{ t.ws_set.count() }}</td>
+            <td>{{ t.das_set.count() }}</td>
           </tr>
           {% endfor %}
         </tbody>

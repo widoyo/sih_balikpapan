@@ -48,7 +48,7 @@ def register(app):
             if logger and logger.tipp_fac and logger.tipp_fac > 0:
                 tf = logger.tipp_fac
             else:
-                tf = 0.2
+                tf = 1
             rain = data.get('tick') * tf
         if data.get('distance', None) != None:
             wlevel = data.get('distance')

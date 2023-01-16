@@ -14,6 +14,12 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
 
+@bp.route('/<int:id>')
+@login_required
+def show(id):
+    obj = get_object_or_404(Tenant, (Tenant.id==id))
+    return render_template('tenant/show.html', tenant=obj)
+
 @bp.route('/add', methods=['POST', 'GET'])
 @login_required
 def add():

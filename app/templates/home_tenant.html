@@ -10,7 +10,12 @@
           </h5>
         </div>
         <div class="card-body">
-          <p class="text-end "></p>
+          {% if hujans %}
+          {% for h in hujans %}
+          {% endfor %}
+          {% else %}
+          <p class="text-center py-2"><i>Tidak ada hujan <b>hari ini</b></i></p>
+          {% endif %}
         </div>
     </div>
 
@@ -21,6 +26,11 @@
         </h5>
       </div>
     <div class="card-body">
+      {% if tmas %}
+      {% else %}
+      <p class="text-center pt-2"><i>Tidak ada data</i></p>
+      <p class="text-center text-muted pb-2"><i>dari <b>sekian</b> pos Duga Air</i></p>
+      {% endif %}
     </div>
   </div>
     </div>

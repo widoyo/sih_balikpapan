@@ -155,7 +155,7 @@ def show(id):
 def index():
     if current_user.location:
         abort(404)
-    poses = Location.select().where(Location.tenant == current_user.tenant)
+    poses = Location.select().where(Location.tenant == current_user.tenant).order_by(Location.nama)
     wss = Ws.select().where(Ws.tenant == current_user.tenant)
     dass = Das.select().where(Das.tenant == current_user.tenant)
     #print(current_user.tenant.id)

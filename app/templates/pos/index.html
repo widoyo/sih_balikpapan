@@ -10,21 +10,25 @@
         </ol>
       </nav>
       <h1>Pos  <span class="fw-lighter">({{ poses|length }})</span><a href="add/" class="ms-5 fs-6 fw-light text-muted">Tambah Pos</a></h1>
-      <p class="text-muted">Edit Pos</p>
+      <p class="text-muted">Pos Curah Hujan dan Pos Duga Air</p>
     </div>
   </div>
   <div class="row">
     <div class="col-sm-8">
+      <p>Urutkan: Nama | Kabupaten | Elevasi</p>
       <table class="table border-top">
         <thead>
           <tr>
             <th>No</th>
-            <th>Nama</th>
+            <th>Nama
+              <div class="fw-lighter" style="font-size:8pt;">WS, DAS</div>
+            </th>
+            <th></th>
             <th>Administratif
-              <div class="fw-lighter" style="font-size:8pt;">Desa, Kecamatan, Kabupaten</div>
+              <div class="fw-lighter" style="font-size:8pt;">Kabupaten, Desa, Kecamatan</div>
             </th>
             <th>Geografis
-              <div class="fw-lighter" style="font-size:8pt;">Latitude, Longitude, Elevasi</div>
+              <div class="fw-lighter" style="font-size:8pt;">Elevasi, Latitude (Lintang), Longitude (Bujur)</div>
             </th>
           </tr>
         </thead>
@@ -32,11 +36,15 @@
           {% for p in poses %}
           <tr>
             <td>{{ loop.index }}</td>
-            <td style="max-width: 200px;" class="text-truncate"><span class="badge {% if p.tipe == '1' %}bg-primary{% elif p.tipe == '2' %}bg-danger{% endif %}">{% if p.tipe == '1' %}PCH{% elif p.tipe == '2' %}PDA{% endif %}</span> <a href="/pos/{{ p.id }}-{{ p.nama }}">{{ p.nama }}</a>
+            <td style="max-width: 200px;" class="text-truncate">
+              
+              <abbr class="editable" data-type="text" data-obj="location" data-name="nama" data-pk="{{ p.id }}" data-title="Nama Pos">{{ p.nama }}</abbr>
             </td>
-            <td><div>ds <abbr class="editable" data-obj='location' data-name='desa' data-type='text' data-pk='{{p.id}}' data-title='Desa' data-value='{{ p.desa }}'>{{ p.nama }}</abbr>, kec. <abbr class="editable" data-type='text' data-pk='{{p.id}}' data-obj='location' data-title='Kecamatan' data-name='kecamatan'>{{ p.kecamatan }}</abbr>, kab. <abbr class="editable" data-type='text' data-pk='{{p.id}}' data-obj='location' data-title='Kabupaten' data-name='kabupaten'>{{ p.kabupaten}}</abbr></div></td>
-            <td><abbr class="editable" data-obj='location' data-name='ll' data-type='text' data-pk='{{ p.id }}'>{{ p.ll or 'latlng'}}</abbr></td>
-            
+            <td><abbr class="editable badge {% if p.tipe == '1' %}bg-primary{% elif p.tipe == '2' %}bg-danger{% elif p.tipe == '3' %}bg-success{% else %}bg-secondary{% endif %}" data-type="select" data-source='[{"value": 1, "text": "PCH"}, {"value": 2, "text": "PDA"}, {"value": 3, "text": "Klimatologi"}]' data-obj="location" data-name="tipe" data-pk="{{ p.id }}" data-title="Tipe Pos Pengamatan">{{ p.tipe }}</abbr>
+            </td>
+            <td><div>Kab. <abbr class="editable" data-type='text' data-pk='{{p.id}}' data-obj='location' data-title='Kabupaten' data-name='kabupaten'>{{ p.kabupaten}}</abbr>, ds <abbr class="editable" data-obj='location' data-name='desa' data-type='text' data-pk='{{p.id}}' data-title='Desa' data-value='{{ p.desa }}'>{{ p.nama }}</abbr>, kec. <abbr class="editable" data-type='text' data-pk='{{p.id}}' data-obj='location' data-title='Kecamatan' data-name='kecamatan'>{{ p.kecamatan }}</abbr></div></td>
+            <td>Elev. <abbr class="editable" title="Elevasi (mdpl)" data-obj="location" data-pk="{{ p.id }}" data-type="number" data-name="elevasi">{{ p.elevasi }}</abbr> <abbr class="editable" data-obj='location' data-name='ll' data-type='text' data-pk='{{ p.id }}'>{{ p.ll or 'latlng'}}</abbr>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -44,9 +52,10 @@
     </div>
     <div class="col-sm-4">
       <div class="card">
-        <div class="card-header">Wilayah Sungai</div>
+        <h5 class="card-header">Wilayah Sungai / WS</h5>
         <div class="card-body">
-          <form id="form_ws" action="/ws" method="POST" class="row g-3">
+          <p>Tambah WS</p>
+          <form id="form_ws" action="/ws" method="POST" class="row g-3 border border-radius pb-3">
             <div class="col-auto">
               <input class="form-control" type="text" name="nama">
             </div>
@@ -54,15 +63,19 @@
               <input class="btn btn-primary" type="submit" value="Tambah" disabled>
             </div>
           </form>
-          <ol class="fs-5 mt-4">
+          {% if ws_list %}
+          <table class="table">
             {% for w in ws_list %}
-            <li>{{ w.nama }} <span class="float-end"><a class="btn btn-light" href="#" style="font-size:10pt;"><i class="bi bi-trash"></i></a></span></li>
+            <tr><td>{{ w.nama }}</td><td><span class="float-end"><a class="btn btn-light" href="#" style="font-size:10pt;"><i class="bi bi-trash"></i></a></span></td></tr>
             {% endfor %}      
-          </ol>
+          </table>
+          {% else %}
+          <p>Belum ada Wilayah Sungai tersimpan.</p>
+          {% endif %}
         </div>
       </div>
       <div class="card mt-5">
-        <div class="card-header">DAS</div>
+        <h5 class="card-header">Daerah Aliran Sungai / DAS</h5>
         <div class="card-body">
           <form id="form_das" action="/das" method="POST" class="row g-3">
             <div class="col-auto">
@@ -72,8 +85,15 @@
               <input class="btn btn-primary" type="submit" value="Tambah" disabled>
             </div>
           </form>
+          {% if das_list %}
+          <table class="table">
           {% for w in das_list %}
-          {% endfor %}    
+            <tr><td>{{ w.nama }}</td></tr>
+          {% endfor %}
+          </table>
+          {% else %}
+          <p>Belum ada Daerah Aliran Sungai tersimpan.</p>
+          {% endif %}
         </div>
       </div>
     </div>
