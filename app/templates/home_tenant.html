@@ -3,6 +3,7 @@
 <div class="container">
   <div class="row">
     <div class="col-md-6">
+      <div class="my-app"></div>
       <div class="card">
         <div class="card-header">
           <h5 class="card-title"><i class="bi bi-cloud-rain me-2"></i> Hujan Hari ini <span class="text-muted fw-lighter">sejak jam 7 pagi</span>
@@ -10,8 +11,10 @@
           </h5>
         </div>
         <div class="card-body">
-          {% if hujans %}
-          {% for h in hujans %}
+          {{ curahhujan|length }}
+          {% if curahhujan %}
+          {% for h in curahhujan %}
+          <li>{{ h.sn }} {{ h.sampling }}</li>
           {% endfor %}
           {% else %}
           <p class="text-center py-2"><i>Tidak ada hujan <b>hari ini</b></i></p>
@@ -37,13 +40,18 @@
     <div class="col-md-6">
       <div class="card">
         <div class="card-header">
-          <h5 class="card-title"><i class="bi bi-cpu me-2"></i> Data Logger tidak aktif</h5>
+          <h5 class="card-title"><i class="bi bi-cpu me-2"></i> Logger <span class="text-end fw-lighter">{{ loggers|length }}</span>
+          <span class="float-end"><a href="/logger" style="font-size:0.8rem;" class="fw-light">Semua Logger</a></span>
+        </h5>
         </div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item">Kosong</li>
         </ul>
       <div class="card-body">
-        Total Data Logger: <span class="text-end">{{ loggers_count }}</span>
+        <h6>Perlu Perhatian</h6>
+        <p>Dilihat dari data terakhir yang lebih dari 5 menit lalu</p>
+        <h6>Prestasi hari ini</h6>
+        <p>Persen kehadiran data hari ini</p>
       </div>
     </div>
     <div class="card mt-4">
@@ -63,6 +71,9 @@
         <div class="mb-3" id="to_import_summary"></div>
         {{ data_upload_form.submit(class='btn btn-primary') }}
       </form>  
+      {% for p in list_petugas %}
+      {{ p.nama }}
+      {% endfor %}
   </div>
   </div>
     </div>

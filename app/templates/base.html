@@ -7,7 +7,7 @@
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <title>prinus</title>
     <style>
       .go-up {
@@ -48,55 +48,55 @@
             <div class="collapse navbar-collapse" id="navbarText">
               <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                 <li class="nav-item px-2">
-                  <a class="nav-link" aria-current="page" href="/">Home</a>
+                  <a class="nav-link" aria-current="page" href="/"><i class="bi bi-cup-hot me-1"></i> Home</a>
                 </li>
                 <li class="nav-item dropdown px-2">
-                  <a class="nav-link dropdown-toggle" role="button" id="dropdownRtdMenuLink" href="#" data-bs-toggle="dropdown" aria-expanded="false">Pos Hidrologi</a>
+                  <a class="nav-link dropdown-toggle" role="button" id="dropdownRtdMenuLink" href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-geo-alt me-1"></i> Pos Hidrologi</a>
                   <ul class="dropdown-menu" araia-labelledby="dropdownRtdMenuLink">
-                    <li><a class="dropdown-item navlink" href="/pos/pch">Curah Hujan</a>
+                    <li><a class="dropdown-item navlink" href="/pos/pch"><i class="bi bi-cloud-rain me-2 text-danger"></i> Curah Hujan</a>
                     </li>
-                    <li><a class="dropdown-item navlink" href="/pos/pda">Duga Air</a>
+                    <li><a class="dropdown-item navlink" href="/pos/pda"><i class="bi bi-water me-2 text-danger"></i> Duga Air</a>
                     </li>
                     <li class="dropdown-divider"></li>
-                    <li><a class="dropdown-item navlink" href="/pos">Semua Pos</a>
+                    <li><a class="dropdown-item navlink" href="/pos"><i class="bi bi-geo-alt me-2 text-danger"></i> Semua Pos</a>
                     </li>
                   </ul>
                 </li>
                 <li class="nav-item dropdown px-2">
-                  <a class="nav-link dropdown-toggle" role="button" id="dropdownRtdMenuLink" href="#" data-bs-toggle="dropdown" aria-expanded="false">Logger</a>
+                  <a class="nav-link dropdown-toggle" role="button" id="dropdownRtdMenuLink" href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-cpu me-1"></i> Logger</a>
                   <ul class="dropdown-menu" araia-labelledby="dropdownRtdMenuLink">
-                    <li><a class="dropdown-item navlink" href="/logger/sehat">Sehat</a>
+                    <li><a class="dropdown-item navlink" href="/logger/sehat"><i class="bi bi-clipboard2-pulse me-2 text-danger"></i> Sehat</a>
                     </li>
                     <li class="dropdown-divider"></li>
-                    <li><a class="dropdown-item navlink" href="/logger">Semua</a>
+                    <li><a class="dropdown-item navlink" href="/logger"><i class="bi bi-list-ul me-2 text-danger"></i> Semua</a>
                     </li>
                   </ul>
                 </li>
                 <li class="nav-item dropdown px-2">
-                  <a class="nav-link dropdown-toggle" role="button" id="dropdownMapMenuLink" href="#" data-bs-toggle="dropdown" aria-expanded="false">Peta</a>
+                  <a class="nav-link dropdown-toggle" role="button" id="dropdownMapMenuLink" href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-map me-1"></i> Peta</a>
                   <ul class="dropdown-menu" aria-labelledby="dropdownMapMenuLink">
-                    <li><a href="/map?show=pch" class="dropdown-item navlink">Pos Curah Hujan</a></li>
-                    <li><a href="/map?show=pda" class="dropdown-item navlink">Pos Duga Air</a></li>
+                    <li><a href="/map?show=pch" class="dropdown-item navlink"><i class="bi bi-cloud-rain me-2 text-danger"></i> Pos Curah Hujan</a></li>
+                    <li><a href="/map?show=pda" class="dropdown-item navlink"><i class="bi bi-water me-2 text-danger"></i> Pos Duga Air</a></li>
                     <li class="dropdown-divider"></li>
-                    <li><a href="/map?" class="dropdown-item navlink">Semua Pos</a></li>
+                    <li><a href="/map?" class="dropdown-item navlink"><i class="bi bi-geo-alt me-2 text-danger"></i> Semua Pos</a></li>
                   </ul>
                 </li>
                 </ul>
                 <ul class="navbar-nav">
                 {% if current_user.is_authenticated %}
                 <li class="nav-item dropdown">
-                  <a href="#" class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-fill" style="color: white"></i> {{ current_user.username }}</a>
+                  <a href="#" class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-fill me-1"></i> {{ current_user.username }}</a>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
                     {% if current_user.tenant %}
-                    <li><a href="/user" class="dropdown-item navlink">User</a></li>
-                    <li><a href="/pos" class="dropdown-item navlink">Pos Hidrologi</a></li>
+                    <li><a href="/user" class="dropdown-item navlink"><i class="bi bi-person me-2 text-danger"></i> User</a></li>
+                    <li><a href="/pos" class="dropdown-item navlink"><i class="bi bi-geo-alt me-2 text-danger"></i> Pos Hidrologi</a></li>
                     {% elif current_user.is_petugas %}
                     <li><a href="/admin/pos/{{ current_user.pos_id }}" class="dropdown-item navlink">Data Hidrologi</a></li>
                     {% endif %}
                     <li>
                       <hr class="dropdown-divider">
                     </li>
-                    <li><a href="/logout" class="dropdown-item navlink">Logout</a></li>   
+                    <li><a href="/logout" class="dropdown-item navlink"><i class="bi bi-power text-danger me-2"></i> Logout</a></li>   
                   </ul>
                 </li>
               {% else %}

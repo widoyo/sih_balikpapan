@@ -42,8 +42,8 @@ class PasswordForm(FlaskForm):
     new_password = StringField()
     
 class UserForm(FlaskForm):
-    username = StringField('Username')
-    password = PasswordField('Password')
+    new_username = StringField('Username')
+    new_password = PasswordField('Password')
     location = SelectField()
     tenant = HiddenField()
     submit = SubmitField('Kirim')

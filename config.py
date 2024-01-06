@@ -15,3 +15,18 @@ class Config(object):
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ARCH_DATA_DIR = os.environ.get('ARCH_DATA_DIR')
     ADMINS = ['widoyo@gmail.com']
+
+class ProductionConfig(Config):
+    FLASK_ENV = 'production'
+
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+
+
+class TestingConfig(Config):
+    TESTING = True
+    DATABASE_URL = os.getenv('TEST_DATABASE_URL',
+                                        default=f"sqlite:///{os.path.join(basedir, 'instance', 'test.db')}")
+    WTF_CSRF_ENABLED = False
+

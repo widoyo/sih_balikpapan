@@ -60,3 +60,7 @@ def get_logger_raw(sn):
 def get_logger(sn):
     logger = Logger.get(Logger.sn==sn)
     return jsonify(logger.to_dict())
+
+@bp.route('/loggers', methods=['GET'])
+def get_loggers():
+    pass

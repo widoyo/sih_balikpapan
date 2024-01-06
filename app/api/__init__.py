@@ -27,6 +27,7 @@ def update():
     db.database.execute_sql(sql)    
     return sql, 200
 
+'''
 @bp.route('/ws', methods=['POST'])
 def create_ws():
     if not current_user.tenant:
@@ -41,6 +42,7 @@ def create_ws():
     response = jsonify(ws.to_dict())
     response.status_code = 201
     return response
+'''
 
 @bp.route('/das', methods=['POST'])
 def create_das():

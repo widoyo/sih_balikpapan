@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 from playhouse.flask_utils import get_object_or_404
 from peewee import Cast
 import pandas as pd
-from .models import Location, Das, Ws, db
+from .models import Location, Das, Ws, Hourly, db
 from .forms import PosForm, UserForm, NoteForm
 
 bp = Blueprint('pos', __name__)
@@ -26,9 +26,25 @@ def pch():
     except:
         tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
     tgl = datetime(int(tahun), int(bulan), int(tanggal))
+    start = tgl.replace(hour=7)
+    end = (tgl + timedelta(days=1)).replace(hour=6)
     pch = Location.select().where(Location.tipe=='1', Location.tenant==current_user.tenant)
-    sql = "SELECT * from hourly WHERE location_id IN () AND sampling BETWEEN AND GROUP BY location_id"
-    return render_template('pos/pch.html', poses=pch, tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1))
+    hch = [{'pch': p, 'pagi': None, 'siang': None, 'malam': None, 
+            'dini': None, 'telemetri': None, 'manual': None} for p in pch]
+    
+    #sql = "SELECT * from hourly WHERE location_id IN () AND sampling BETWEEN AND GROUP BY location_id"
+    hourly_ch = Hourly.select().where((Hourly.location.in_(pch)) & (Hourly.sampling.between(start, end))).order_by(Hourly.location, Hourly.sampling)
+    segmented_ch = []
+    for h in hourly_ch:
+        segmented_ch[h.location.id]
+    # output: pos|7-13|13-19|19-01|01-07|total
+    return render_template(
+        'pos/pch.html', 
+        poses=hch, 
+        tgl=tgl, 
+        _tgl=tgl - timedelta(days=1), 
+        tgl_= tgl + timedelta(days=1),
+        hourly_ch=hourly_ch)
 
 @bp.route('/pda/')
 def pda():
@@ -111,6 +127,37 @@ def show(id):
         _sta -= timedelta(days=1)
     if _end > datetime.now().astimezone():
         _end = datetime.now().astimezone()
+    id = int(id.split('-')[0])
+    pos = get_object_or_404(Location, (Location.id == id))
+    if pos.tipe not in ('1', '2', '3'):
+        return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
+    hourly_ = Hourly.select().where((Hourly.location_id==id) & (Hourly.sampling.between(_sta, _end)))
+    note_form = NoteForm(object_type='location', object_id=pos.id)
+    return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, 
+                           tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), 
+                           note_form=note_form, show=show,
+                           hourly_=hourly_)
+
+    
+@bp.route('/<id>/pd')
+@login_required
+def show_with_pd(id):
+    sampling = request.args.get('s')
+    if sampling:
+        for sep in ['-', '/']:
+            if sep in sampling:
+                break
+    try:
+        tahun,bulan,tanggal = sampling.split(sep)
+    except:
+        tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
+    tgl = datetime(int(tahun), int(bulan), int(tanggal)).astimezone()
+    _sta = tgl.replace(hour=7).astimezone()
+    _end = (_sta + timedelta(days=1)).replace(hour=6, minute=55)
+    if _sta > _end:
+        _sta -= timedelta(days=1)
+    if _end > datetime.now().astimezone():
+        _end = datetime.now().astimezone()
     dft = pd.DataFrame(index=pd.date_range(datetime.fromtimestamp(int(_sta.strftime('%s'))), datetime.fromtimestamp(int(_end.strftime('%s'))), freq='5T'))
     id = int(id.split('-')[0])
     pos = get_object_or_404(Location, (Location.id == id))
@@ -122,7 +169,7 @@ def show(id):
     ds_rain = pd.Series()
     if pos.logger_set:
         logger = pos.logger_set[0]
-        sql = "SELECT content from raw WHERE sn = ? AND (content->>'sampling')::INTEGER >= ? AND (content->>'sampling')::INTEGER <= ?"
+        sql = "SELECT content from raw WHERE sn=%s AND (content->>'sampling')::INTEGER >= %s AND (content->>'sampling')::INTEGER <= %s"
         rst = db.database.execute_sql(sql, (logger.sn, _sta.strftime('%s'), _end.strftime('%s')))
         print(dir(rst))
         #raws = Raw.select(Raw.content).where(Raw.sn==logger.sn).limit(288).order_by(Raw.id)

@@ -15,7 +15,6 @@
   </div>
   <div class="row mb-4">
     <div class="col-sm-8">
-&nbsp;
     </div>
     <div class="col-sm-4">
   </div>
@@ -26,15 +25,15 @@
         <div class="col-4 text-center fs-4">{{ tgl.strftime('%d %b %y') }}</div>
         <div class="col-4 text-start"><a class="btn btn-light" href="{{ url_for('pos.pch') }}?s={{ tgl_.strftime('%Y/%m/%d') }}"><i class="bi bi-chevron-right"></i></a></div>  
     </div>
-<table class="table border-top">
+<table class="table border-top table-striped">
   <thead>
     <tr>
       <th class="align-baseline">No</th>
       <th class="align-baseline">Nama</th>
-      <th class="small">Pagi <div style="font-weight: 300;font-size: 8pt;">07:01 - 13:00</div></th>
-      <th class="small">Siang-Sore <div style="font-weight: 300;font-size: 8pt;">13:01 - 19:00</div></th>
-      <th class="small">Malam <div style="font-weight: 300;font-size: 8pt;">19:01 - 01:00</div></th>
-      <th class="small">Dini Hari <div style="font-weight: 300;font-size: 8pt;">01:01 - 07:00</div></th>
+      <th class="text-center small">Pagi <div style="font-weight: 300;font-size: 8pt;">07:01 - 13:00</div></th>
+      <th class="text-center small">Siang-Sore <div style="font-weight: 300;font-size: 8pt;">13:01 - 19:00</div></th>
+      <th class="text-center small">Malam <div style="font-weight: 300;font-size: 8pt;">19:01 - 01:00</div></th>
+      <th class="text-center small">Dini Hari <div style="font-weight: 300;font-size: 8pt;">01:01 - 07:00</div></th>
       <th class="align-baseline">Telemetri</th>
       <th class="align-baseline">Manual<div style="font-weight: 300;font-size: 8pt;">oleh Pengamat Pos</div></th>
     </tr>
@@ -43,13 +42,13 @@
     {% for p in poses %}
     <tr>
       <td>{{ loop.index }}</td>
-      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{p.id}}-{{p.nama}}">{{ p.nama }}</a></td>
-      <td class="text-end rain-val">0</td>
-      <td class="text-end rain-val">0</td>
-      <td class="text-end rain-val">0</td>
-      <td class="text-end rain-val">0</td>
-      <td class="text-end rain-val">0</td>
-      <td class="text-end rain-val">0</td>
+      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{p['pch'].id}}-{{p['pch'].nama}}/{{ tgl.strftime('%Y/%m')}}">{{ p['pch'].nama }}</a></td>
+      <td class="text-end rain-val">{{ p.pagi or '-'}}</td>
+      <td class="text-end rain-val">{{ p.siang or '-' }}</td>
+      <td class="text-end rain-val">{{ p.malam or '-' }}</td>
+      <td class="text-end rain-val">{{ p.dini or '-' }}</td>
+      <td class="text-end rain-val">{{ p.telemetri or '-' }}</td>
+      <td class="text-end rain-val">{{ p.manual or '-' }}</td>
       
     </tr>
     {% endfor %}

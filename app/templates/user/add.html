@@ -21,16 +21,16 @@
       </div>
   <div class="row">
     <div class="col-sm-6">
-      <form action="{{ url_for('user.add') }}" method="POST">
+      <form action="{{ url_for('user.add') }}" method="POST" autocomplete="absmksl">
         {{ form.hidden_tag() }}
       <div class="mb-3">
-        <label for="username" class="form-label">{{ form.username.label }}</label>
-        {{ form.username(class='form-control') }}
+        <label for="new_username" class="form-label">{{ form.new_username.label }}</label>
+        {{ form.new_username(class='form-control', autocomplete="off") }}
         <div class="form-text">Minimal 4 karakter (huruf kecil atau angka)</div>
       </div>
       <div class="mb-3">
-        <label for="" class="form-label">{{ form.password.label }}</label>
-        {{ form.password(class='form-control') }}
+        <label for="" class="form-label">{{ form.new_password.label }}</label>
+        {{ form.new_password(class='form-control') }}
       </div>
       <div class="mb-3">
         <label for="location" class="form-label">POS Hidrologi </label>

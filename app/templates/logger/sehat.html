@@ -13,7 +13,7 @@
         </ol>
       </nav>
       <h1>Kesehatan Logger <span class="float-end"><a class="btn btn-light" href="{{ url_for('logger.sehat') }}?s={{ prev_s.strftime('%Y-%m-%d') }}"><i class="me-3 bi bi-chevron-left"></i></a> {{ sampling.strftime('%d') }} <span class="text-muted fs-5 fw-light">{{ sampling.strftime('%b %Y') }}</span> <a class="btn btn-light" href="{{ url_for('logger.sehat') }}?s={{ next_s.strftime('%Y-%m-%d') }}"><i class="ms-3 bi bi-chevron-right"></i></a></span></h1>
-      <table class="table border-top">
+      <table class="table border-top table-striped">
         <thead>
           <tr>
             <th>Logger</th>
@@ -25,10 +25,10 @@
         <tbody>
         {% for logger in logger_list %}
           <tr>
-            <td style="max-width: 150px;" class="text-truncate">{{ logger.sn }} 
-              <a data-bs-toggle="tooltip" data-bs-title="{{ logger.location.nama }}" title="{{ logger.location.nama }}" href="{{ url_for('pos.show', id=logger.location.id) }}" class="text-muted fs-6 fw-light">{{ logger.location.nama }}</a></td>
+            <td style="max-width: 150px;" class="text-truncate"><i class="bi bi-cpu me-1 {% if logger.tipe == 'arr' %}text-primary{% elif logger.tipe == 'awlr' %}text-danger{% endif %}"></i> {{ logger.sn }} 
+              <br>{% if logger.location %}<i class="bi bi-geo-alt me-1"></i> <a data-bs-toggle="tooltip" data-bs-title="{{ logger.location.nama }}" title="{{ logger.location.nama }}" href="{{ url_for('pos.show', id=logger.location.id) }}" class="text-muted fw-light" style="font-size:10pt">{{ logger.location.nama }}</a>{% else %}-{% endif %}</td>
             {% for i in range(0, 24) %}
-            <td class="num">5</td>
+            <td class="num">-</td>
             {% endfor %}
           </tr>
       {% else %}

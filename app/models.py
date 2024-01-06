@@ -128,6 +128,11 @@ class Logger(db.Model):
     created = pw.DateTimeField(default=datetime.datetime.now)
     modified = pw.DateTimeField(null=True)
     son_res = pw.FloatField(null=True)
+    latest = pw.DateTimeField(null=True)
+    num_data = pw.IntegerField(default=0)
+    latest_sampling = pw.DateTimeField(null=True)
+    latest_up = pw.DateTimeField(null=True)
+    latest_battery = pw.FloatField(null=True)
     
     class Meta:
         order_by = ['id']
@@ -212,7 +217,8 @@ class User(UserMixin, db.Model):
         now = datetime.datetime.utcnow()
         if self.token and self.token_expiration > now + datetime.timedelta(seconds=60):
             return self.token
-        self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
+        import secrets
+        self.token = secrets.token_urlsafe()
         self.token_expiration = now + datetime.timedelta(seconds=expires_in)
         self.save()
         return self.token
@@ -228,17 +234,19 @@ class User(UserMixin, db.Model):
                 return user
         except User.DoesNotExist:
             pass
-        return None
+        
 
 class Daily(db.Model):
     '''Data per Hari, komilasi dari Hourly'''
     location = pw.ForeignKeyField(Location, null=True)
     sn = pw.CharField(max_length=10)
     sampling = pw.DateField() # Tanggal, start jam 7, pada hari lalu
-    rain = pw.IntegerField(default=0)
-    wlevel_a = pw.FloatField(null=True) # average
-    wlevel_x = pw.FloatField(null=True) # Max
-    wlevel_n = pw.FloatField(null=True) # Min
+    rain = pw.IntegerField(null=True)
+    tick = pw.IntegerField(null=True)
+    distance = pw.FloatField(null=True) # data terakhir pada hari
+    wlevel_a = pw.FloatField(null=True) # telemetri pagi
+    wlevel_x = pw.FloatField(null=True) # telemetri siang
+    wlevel_n = pw.FloatField(null=True) # telemetri sore
     num_data = pw.IntegerField(default=0)
     sq_a = pw.IntegerField(null=True)
     batt_a = pw.FloatField(null=True) # dalam volt
@@ -259,19 +267,23 @@ class Hourly(db.Model):
     location = pw.ForeignKeyField(Location, null=True)
     sn = pw.CharField(max_length=10)
     sampling = pw.DateTimeField(help_text='tanggal dan jam. Menit & Detik = 0') # tanggal dan jam. Menit & Detik = 0
-    tick = pw.IntegerField(default=0, help_text='akumulasi tick') # nilai akumulasi tick
-    rain = pw.IntegerField(default=0, help_text='akumulasi tick X tipp_factor') # akumulasi tick X tipp_factor
-    distance = pw.IntegerField(null=True, help_text='distance pada jam') # distance pada jam
+    tick = pw.IntegerField(null=True, help_text='akumulasi tick') # nilai akumulasi tick
+    rain = pw.IntegerField(null=True, help_text='akumulasi tick X tipp_factor') # akumulasi tick X tipp_factor
+    distance = pw.IntegerField(null=True, help_text='distance pada jam') # distance terakhir pada jam
     distance_x = pw.IntegerField(null=True, help_text='Max') # distance max
     distance_n = pw.IntegerField(null=True, help_text='Min') # distance min
-    wlevel_a = pw.FloatField(null=True, help_text='Rerata') # average
+    wlevel = pw.FloatField(null=True, help_text='WLevel terakhir pada jam') # WLevel terakhir pada jam 
     wlevel_x = pw.FloatField(null=True, help_text='Max') # Max
     wlevel_n = pw.FloatField(null=True, help_text='Min') # Min
     num_data = pw.IntegerField(default=0, help_text='banyak data sejam') # banyak data
-    sq_a = pw.IntegerField(null=True, help_text='rerata SQ') # rerata
-    batt_a = pw.FloatField(null=True, help_text='rerata batt') # rerata
+    sq = pw.IntegerField(null=True, help_text='rerata SQ') # rerata
+    batt = pw.FloatField(null=True, help_text='rerata batt') # rerata
     num_start = pw.IntegerField(default=0, help_text='banyaknya restart primabot pada jam ini') # banyaknya restart primabot pada jam ini
     content = pw.TextField(null=True)
+    
+    class Meta:
+        order_by = ['sampling']
+        indexes = (('sn', 'sampling'), True),
     
     
 class Offline(db.Model):

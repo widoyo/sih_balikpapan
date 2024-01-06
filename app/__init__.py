@@ -9,7 +9,7 @@ from flask import Flask, jsonify, render_template, redirect, url_for, request, j
 from flask import flash, send_from_directory
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 #from werkzeug import generate_password_hash, check_password_hash
-from werkzeug.urls import url_parse
+
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -18,9 +18,11 @@ from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from flask_debugtoolbar import DebugToolbarExtension
 
 from app.forms import ManualChForm, ManualTmaForm, UserForm, DataUploadForm, DataDownloadForm
-from app.models import Location, Logger, Offline, Ws, Das
+from app.models import Location, Hourly, Offline, Ws, Das
 from app import errors
 import pandas as pd
+from apifairy import APIFairy
+from flask_marshmallow import Marshmallow
 
 from config import Config
 
@@ -31,6 +33,9 @@ token_auth = HTTPTokenAuth()
 
 login_manager = LoginManager()    
 login_manager.login_view = 'login'
+
+apifairy = APIFairy()
+ma = Marshmallow()
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -45,6 +50,9 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
+    initialize_extensions(app)
+    register_blueprints(app)
+    
     if not app.debug:
         if not os.path.exists('logs'):
             os.mkdir('logs')
@@ -72,38 +80,21 @@ def create_app(config_class=Config):
             app.logger.addHandler(mail_handler)
 
     from app.models import db, User, Logger, Tenant, Raw, Daily
-    from app import pos 
-    from app import logger
-    from app import user
-    from app import tenant
-    from app import map
-    from app import api
     
     @basic_auth.verify_password
     def verify_password(username, password):
         try:
             user = User.get(User.username==username)
+            if user and user.check_password(password):
+                return user
+            else: return None
         except User.DoesNotExist:
-            return
-        if user and user.check_password(password):
-            return user
+            return None
 
     @token_auth.verify_token
     def verify_token(token):
         return User.check_token(token) if token else None
     
-    login_manager.init_app(app)
-    db.init_app(app)
-    
-    debug_toolbar.init_app(app)
-    
-    app.register_blueprint(pos.bp, url_prefix='/pos')
-    app.register_blueprint(logger.bp, url_prefix='/logger')
-    app.register_blueprint(user.bp, url_prefix='/user')
-    app.register_blueprint(tenant.bp, url_prefix='/tenant')
-    app.register_blueprint(map.bp, url_prefix='/map')
-    app.register_blueprint(api.bp, url_prefix='/api' )
-
     @login_manager.user_loader
     def load_user(user_id):
         try:
@@ -145,8 +136,7 @@ def create_app(config_class=Config):
             pass
         form.location.choices = location_list
         return render_template('data_download.html', form=form)
-        
-    
+
     @app.route('/offline')
     @login_required
     def offline():
@@ -252,13 +242,14 @@ def create_app(config_class=Config):
             login_user(user, remember=form.remember_me.data)
             
             next_page = request.args.get('next')
-            if not next_page or url_parse(next_page).netloc != '':
+            if not next_page:
                 next_page = '/'
             return redirect(next_page)
         return render_template('login.html', title='Sign In', form=form)
     
     @app.route('/logout')
     def logout():
+        current_user.revoke_token()
         logout_user()
         return redirect('/')    
 
@@ -312,18 +303,61 @@ def create_app(config_class=Config):
                     return render_template(template_name, data_upload_form=data_upload_form, \
                         daily_set=daily_set, manual_form=form, today=today, next_month=next_month, \
                             prev_month=prev_month, errors=errors)
+                
                 list_petugas = User.select().where(User.tenant==current_user.tenant).order_by(User.username)
+                
                 sns = [l.sn for l in current_user.tenant.logger_set]
+                chs = Hourly.select().where(
+                    (Hourly.sn.in_(sns)) &
+                    (Hourly.sampling.year==today.year) &
+                    (Hourly.sampling.month==today.month) &
+                    (Hourly.sampling.day==today.day) &
+                    (Hourly.rain > 0))
+                tmas = Hourly.select().where(
+                    (Hourly.sn.in_(sns)) &
+                    (Hourly.sampling.year==today.year) &
+                    (Hourly.sampling.month==today.month) &
+                    (Hourly.sampling.day==today.day) &
+                    (Hourly.distance != None))
+                    
                 #sql = f"SELECT id,content->>'tick', content->>'distance' AS distance, content->>'sampling' FROM raw WHERE sn IN ({','.join('?' for _ in sns)}) AND distance IS NOT NULL LIMIT 3000"
                 #rst = db.database.execute_sql(sql, sns)
                 #for r in rst:
                 #    print(r)
                 #loggers_count = Logger.select().where(Logger.tenant==current_user.tenant).count()
                 return render_template('home_tenant.html', 
-                                       loggers_count=current_user.tenant.logger_set.count(), 
+                                       loggers=current_user.tenant.logger_set, 
                                        list_petugas=list_petugas,
-                                       data_upload_form=data_upload_form)
+                                       data_upload_form=data_upload_form,
+                                       curahhujan=chs,
+                                       tmas=tmas)
         else:
             return render_template('welcome.html', form=LoginForm())
     
     return app
+
+
+def initialize_extensions(app):
+    from app.models import db
+    login_manager.init_app(app)
+    db.init_app(app)
+    debug_toolbar.init_app(app)
+    apifairy.init_app(app)
+    ma.init_app(app)
+
+
+def register_blueprints(app):
+    from app import pos 
+    from app import logger
+    from app import user
+    from app import tenant
+    from app import map
+    from app import api
+
+    app.register_blueprint(pos.bp, url_prefix='/pos')
+    app.register_blueprint(logger.bp, url_prefix='/logger')
+    app.register_blueprint(user.bp, url_prefix='/user')
+    app.register_blueprint(tenant.bp, url_prefix='/tenant')
+    app.register_blueprint(map.bp, url_prefix='/map')
+    app.register_blueprint(api.bp, url_prefix='/api' )
+

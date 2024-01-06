@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+from zoneinfo import ZoneInfo
 import pytz
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timedelta
@@ -11,17 +12,198 @@ import click
 from flask import json
 import pandas as pd
 import numpy as np
+from peewee import DoesNotExist
 
 from app.models import db, Tenant, Logger, User, Location, Raw, Hourly, Daily
 
+logging.basicConfig(
+    filename='daemonocle_example.log',
+    level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s',
+)
+app_logger = logging.getLogger(__name__)
+
+def to_hourly(data: dict):
+    """
+    msg dari primabot disiapkan utk ditambahkan ke data per jam
+    """
+    if not data:
+        return
+    (hourly, created) = Hourly.get_or_create(
+        sn=data.get('sn'), 
+        sampling=data.get('sampling').replace(minute=0),
+        defaults={'num_data': 1,
+                  'rain': data.get('rain'), 
+                  'tick': data.get('tick'),
+                  'distance': data.get('distance'),
+                  'distance_n': data.get('distance'),
+                  'distance_x': data.get('distance'),
+                  'wlevel': data.get('wlevel'),
+                  'wlevel_n': data.get('wlevel'),
+                  'wlevel_x': data.get('wlevel'),
+                  'location': data.get('location_id')})
+    if not created:
+        if data.get('distance'):
+            hourly.distance_n = data.get('distance') < hourly.distance_n and data.get('distance') or hourly.distance_n
+            hourly.distance_x = data.get('distance') > hourly.distance_x and data.get('distance') or hourly.distance_x
+            hourly.wlevel_n = data.get('wlevel') < hourly.wlevel_n and data.get('wlevel') or hourly.wlevel_n
+            hourly.wlevel_x = data.get('wlevel') > hourly.wlevel_x and data.get('wlevel') or hourly.wlevel_x
+        try: 
+            hourly.rain += data.get('rain')
+        except TypeError:
+            pass
+        try:
+            hourly.tick += data.get('tick')
+        except TypeError:
+            pass
+        try:
+            hourly.num_data += 1
+        except TypeError:
+            pass
+    hourly.save()
+    return hourly
+
+
+def ps_rec(msg: str):
+    d = json.loads(msg)
+    sampling = datetime.fromtimestamp(d['sampling'])
+    tzinfo = ZoneInfo('Asia/Jakarta')
+    try:
+        sn = d['device'].split('/')[1]
+    except IndexError:
+        return
+    out = dict(sn=sn, sampling=sampling)
+    #logger = Logger.get(sn=sn)
+    #click.echo("{} pada {}".format(sn, sampling))
+            
+    try:
+        logger = Logger.get(Logger.sn==sn)
+        logger.latest = sampling
+        logger.num_data = logger.num_data + 1
+        logger.save()
+    except DoesNotExist:
+        return
+    location = logger.location
+    #click.echo(logger.location)
+    #get_Hourly
+    if location:
+        out.update({'location': location.nama, 'location_id': location.id})
+        tzinfo = ZoneInfo(logger.tenant.timezone)
+    out['sampling'] = out['sampling'].replace(tzinfo=tzinfo)
+    if 'tick' in d:
+        tipping_factor = 0.2
+        if logger.tipp_fac and logger.tipp_fac > 0:
+            tipping_factor = logger.tipp_fac
+        out.update({'tick': d['tick']})
+        out['rain'] = tipping_factor * d['tick']
+        #click.echo('tick: {} * {}'.format(d['tick'], tipping_factor))
+    if 'distance' in d:
+        out.update({'distance': d['distance']})
+        sensor_height = logger.ting_son or 1000
+        sensor_resolution = logger.son_res or 1
+        wlevel = d['distance'] - (sensor_height * sensor_resolution)
+        out.update({'wlevel': wlevel})
+        #click.echo('dist: {} {} {}'.format(d['distance'], sensor_height, sensor_resolution))
+        #click.echo('distance: {}, sensor_height: {}, sensor_resolution: {}'.format(d['distance'], d['sensor_height'], d['sensor_resolution']))
+    if 'temperature' in d:
+        out.update({'temperature': d['temperature']})
+    if 'humidity' in d:
+        out.update({'humidity': d['humidity']})
+    if 'win_speed' in d:
+        out.update({'wind_speed': d['wind_speed']})
+    if 'wind_direction' in d:
+        out.update({'wind_direction': d['wind_direction']})
+    if 'sun_radiation' in d:
+        out.update({'sun_radiation': d['sun_radiation']})
+    #click.echo(datetime.fromtimestamp(d['sampling']))
+    if 'wl_scale' in d:
+        out.update({'wl_scale': d['wl_scale']})
+        # long map(long x, long in_min, long in_max, long out_min, long out_max) {
+        #   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+        # }
+        # in_min = 0, out_min = 1023 (atmega 328p)
+        # out_min = 0 (dasar sungai)
+        # out_max = Muka Air Maksimum (config by user)
+        # 
+    return out
+
+
+def _get_hour(sn: str, jam: datetime):
+    """
+    Mengambil data dalam sejam dan outputkan ringkasan
+    """
+    try:
+        logger = Logger.get(sn=sn)
+    except DoesNotExist:
+        print('Tidak ditemukan')
+        return
+    tenant = logger.tenant
+    tipping_factor = logger.tipp_fac or 0.2
+    jam = jam.astimezone(pytz.timezone(logger.tenant.timezone))
+    _sta = jam.replace(minute=0, second=0)
+    print(_sta)
+    _end = jam.replace(minute=55, second=0)
+    sql = '''SELECT content from raw WHERE sn = %s AND (content->>'sampling')::bigint >= %s AND (content->>'sampling')::bigint <= %s ORDER BY id'''
+    rst = db.database.execute_sql(sql, (sn, _sta.strftime('%s'), _end.strftime('%s')))
+    print(_sta - _sta.utcoffset())
+    for r in rst:
+        print(r.content)
+    
+def _get_day(sn: str, tgl: datetime):
+    """
+    Mengambil rain&wlevel dijadikan ke daily"""
+    try:
+        logger = Logger.get(sn=sn)
+    except DoesNotExist:
+        print('Tidak ditemukan')
+        return
+    tenant = logger.tenant
+    tipping_factor = logger.tipp_fac or 0.2
+    tgl = tgl.astimezone(pytz.timezone(logger.tenant.timezone))
+    _sta = tgl.replace(hour=7)
+    _end = (tgl + timedelta(days=1)).replace(hour=6, minute=55)
+    sql = '''SELECT content from raw WHERE sn = %s AND (content->>'sampling')::bigint >= %s AND (content->>'sampling')::bigint <= %s ORDER BY id'''
+    rst = db.database.execute_sql(sql, (sn, (_sta - _sta.utcoffset()).strftime('%s'), (_end - _end.utcoffset()).strftime('%s')))
+    click.echo(sql % (sn, (_sta - _sta.utcoffset()).strftime('%s'), (_end - _end.utcoffset()).strftime('%s')))
+    dft = pd.DataFrame(index=pd.date_range(_sta, end=_end, freq='5T', tz=pytz.timezone(logger.tenant.timezone)))
+    df = pd.DataFrame([r[0] for r in rst.fetchall()])
+    if df.empty:
+        return
+    #print(df.info())
+    df['sampling'] = pd.to_datetime(df['sampling'], unit='s', utc=True).map(lambda x: x.tz_convert(logger.tenant.timezone))
+    df.set_index('sampling', inplace=True)
+    df = dft.join(df)
+    ds_num = df.groupby(pd.Grouper(freq='1h'))['battery'].count()
+    ds_batt = df.groupby(pd.Grouper(freq='1D'))['battery'].tail(1)
+    try:
+        ds_signal = df.groupby(pd.Grouper(freq='1D'))['signal_quality'].tail(1)
+    except KeyError:
+        pass
+    ds_rain = df.groupby(pd.Grouper(freq='1h'))['tick'].sum()
+    ds_tick = df.groupby(pd.Grouper(freq='1h'))['tick'].sum()
+    ds_rain = ds_rain.map(lambda x: x * tipping_factor, na_action='ignore').round(1)
+    #print(df['battery'].tail(1))
+    print(df['battery'].fillna(method='ffill').tail(1))
+    print(ds_num.to_dict())
+    #print(df['signal_quality'].fillna(method='ffill').tail(1))
+    print((df['tick'].count() / 288) * 100, '%')
+
 def register(app):
+    
+    @app.cli.command('hourly')
+    @click.option('--n', default=5, help='banyaknya yang akan ditampilkan')
+    def _show_hourly(n=5):
+        """Menampilkan data hourly hari ini"""
+        click.echo("Banyak Record: {}".format(Hourly.select().count()))
+        for h in Hourly.select().order_by(Hourly.id.desc()).limit(n):
+            click.echo("{} {}".format(h.sn, h.sampling))
+        
     def on_connect(client, userdata, flags, rc):
         click.echo("Connected with result code "+str(rc))
-        client.app_logger.info("Connected: " + str(rc))
+        #client.app_logger.info("Connected: " + str(rc))
         #insert_into_hourly()
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
-        client.subscribe([('bbws-bsolo', 0), ('bws-sul2', 0), ('uns-ft', 0), ('pusair-bdg', 0), ('cimancis', 0), ('bwss2', 0), ('bwss4', 0), ('bws-kal3', 0), ('bws-sul1', 0), ('bws-kal1', 0), ('bws-pb', 0), ('bwss5', 0), ('upbbsolo', 0), ('bwsnt1', 0), ('bws-kal2', 0), ('btsungai', 0), ('bws-kal4', 0), ('float1', 0), ('dpublpp', 0), ('pdamgresik', 0), ('wikahutama', 0), ('bbwssul3', 0), ('purinilam', 0), ('palangkaraya', 0), ('pusdajatim', 0), ('dpuprklaten', 0), ('bwskal5', 0), ('bbwscitanduy', 0)])
+        client.subscribe([('bbws-bsolo', 0), ('bws-sul2', 0), ('uns-ft', 0), ('pusair-bdg', 0), ('cimancis', 0), ('bwss2', 0), ('bwss4', 0), ('bws-kal3', 0), ('bws-sul1', 0), ('bws-kal1', 0), ('bws-pb', 0), ('bwss5', 0), ('upbbsolo', 0), ('bwsnt1', 0), ('banjarmasin', 0), ('btsungai', 0), ('bws-kal4', 0), ('float1', 0), ('dpublpp', 0), ('pdamgresik', 0), ('wikahutama', 0), ('bbwssul3', 0), ('purinilam', 0), ('palangkaraya', 0), ('pusdajatim', 0), ('dpuprklaten', 0), ('bwskal5', 0), ('bbwscitanduy', 0)])
 
     # The callback for when a PUBLISH message is received from the server.
     def on_message(client, userdata, msg):
@@ -29,45 +211,24 @@ def register(app):
         try:
             sn = data.get('device').split('/')[1]
         except IndexError:
-            client.app_logger.info('SN tidak ditemukan: ' + data.get('device'))
+            app_logger.info('SN tidak ditemukan: ' + data.get('device'))
             click.echo('SN tidak ditemukan')
             click.echo(data)
             return
-        click.echo(sn)
-        
-        try:
-            logger = Logger.get(Logger.sn==sn)
-        except:
-            logger = None
-        lid = None
-        if logger and logger.location:
-            lid = logger.location.id
-        rain = None
-        wlevel = None
-        if 'tick' in data:
-            if logger and logger.tipp_fac and logger.tipp_fac > 0:
-                tf = logger.tipp_fac
-            else:
-                tf = 1
-            rain = data.get('tick') * tf
-        if data.get('distance', None) != None:
-            wlevel = data.get('distance')
-            
-        ret = {'sn': sn, 'location_id': lid, 'sampling': datetime.fromtimestamp(data.get('sampling'))}
-        if rain != None: ret.update({'rain': rain, 'tick': data.get('tick')})
-        if wlevel: ret.update({'wlevel': wlevel, 'distance': data.get('distance')})
-        with open('/tmp/out.txt', 'a') as f:
-            f.write('{}\n'.format(str(ret)))
+        app_logger.info('SN: ' + sn)
+        #logger = Logger.get(Logger.sn==sn)
+        rst = db.database.execute_sql('''SELECT id from logger WHERE sn=%s''', (sn))
+
+        #out = ps_rec(msg.payload.decode('utf-8'))
+        #to_hourly(out)
+        #with open('/tmp/out.txt', 'a') as f:
+        #    f.write(str(out))
 
     
-    @app.cli.command(cls=DaemonCLI, daemon_params={'pid_file': '/var/run/prinus_capture.pid',
+    @app.cli.command(cls=DaemonCLI, daemon_params={'pid_file': 'prinus_capture.pid',
                                                    'work_dir': '.'})
     def listen_prinus():
-        logging.basicConfig(
-            filename='/var/log/daemonocle_example.log',
-            level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s',
-        )
-        app_logger = logging.getLogger(__name__)
+        """Listen MQTT insert/update table hourly"""
         #app = create_app(Config)
         client = mqtt.Client()
         client.enable_logger(app_logger)
@@ -159,23 +320,28 @@ def register(app):
         except Logger.DoesNotExits:
             logger = None
         t,b = bl.split('-')
-        bulan = datetime(int(t), int(b), 1, 7)
-        _sta = int(bulan.strftime('%s'))
+        bulan = datetime(int(t), int(b), 1, 7).astimezone(pytz.timezone(tz))
+        _sta = bulan
         # _sta = 1648767600
-        _end = (bulan + timedelta(days=32)).replace(day=1, hour=6, minute=55).strftime('%s')
-        today = datetime.now()
+        _end = (bulan + timedelta(days=32)).replace(day=1, hour=6, minute=55)
+        today = datetime.now().astimezone(tz=pytz.timezone(tz))
         if bulan.month == today.month:
-            _end = today.strftime('%s')
+            _end = today
         # _end = 1648857300
-        dft = pd.DataFrame(index=pd.date_range(datetime.fromtimestamp(int(_sta)), datetime.fromtimestamp(int(_end)), freq='5T'))
+        click.echo('_sta: {}'.format(_sta))
+        click.echo('_end: {}'.format(_end))
+        dft = pd.DataFrame(index=pd.date_range(_sta, end=_end, freq='5T', tz=tz))
         click.echo('SN: {}'.format(sn))
-        rst = db.database.execute_sql("SELECT content FROM raw WHERE sn='{}' AND (content->>'sampling')::int >= {} AND (content->>'sampling')::int < {} ORDER BY id ".format(sn, _sta, _end))
+        rst = db.database.execute_sql("SELECT content FROM raw WHERE sn='{}' AND \
+            (content->>'sampling')::int >= {} AND \
+                (content->>'sampling')::int < {} \
+                    ORDER BY id ".format(sn, (_sta - _sta.utcoffset()).strftime('%s'), _end.strftime('%s')))
         data = [r[0] for r in rst.fetchall()]
         click.echo('len(data): {}'.format(len(data)))
         if len(data) == 0: return
         df = pd.DataFrame(data)
         click.echo(df.info())
-        df['sampling'] = pd.to_datetime(df['sampling'], unit='s')
+        df['sampling'] = pd.to_datetime(df['sampling'], unit='s', utc=True).map(lambda x: x.tz_convert(tz))
         #df.drop(columns=['device', 'time_set_at', 'signal_quality', 'pressure', 'altitude', 'temperature'], inplace=True)
         df.set_index('sampling', inplace=True)
         #ds_batt = df.groupby(pd.Grouper(freq='1h'))['battery'].mean().round(1)
@@ -233,11 +399,11 @@ def register(app):
 
         if logger.tipe == 'arr':        
             # Nambahi catatan untuk ARR
-            note += 'Curah Hujan (mm)\nDasar perhitungan:\n Tipping factor: {} mm\n'.format(tf)
+            note += 'Curah Hujan (mm), Timezone: {}\nDasar perhitungan:\n Tipping factor: {} mm\n'.format(tz, tf)
             newdf = pd.DataFrame({'banyak': ds_num, 'curah_hujan': ds_rain})
         if logger.tipe == 'awlr':
             # Nambahi catatan untuk AWLR
-            note += 'Tinggi Muka Air (meter)\nDasar perhitungan:\n Tinggi Sonar: {} cm\n Resolusi Sonar: {}\n'.format(ting_son, son_res == 1 and 'cm' or 'mm')
+            note += 'Tinggi Muka Air (meter), Timezone: {}\nDasar perhitungan:\n Tinggi Sonar: {} cm\n Resolusi Sonar: {}\n'.format(tz, ting_son, son_res == 1 and 'cm' or 'mm')
             newdf = pd.DataFrame({'banyak': ds_num, 'tma_max': ds_wlevel_x, 'tma_average': ds_wlevel_a, 'tma_min': ds_wlevel_n})
 
         newdf.to_csv(fname, index_label='sampling')
@@ -248,7 +414,18 @@ def register(app):
         #df = df.resample('H').agg({'rain': 'sum', 'tick': 'count'})
         #click.echo(df.info())
 
-
+    @app.cli.command('get-day')
+    @click.argument('sn')
+    @click.argument('sampling')
+    def get_day(sn, sampling):
+        for spliter in ('-', '/'):
+            try:
+                (tahun, bulan, tanggal) = sampling.split(spliter)
+                break
+            except:
+                pass
+        _get_day(sn, datetime(int(tahun), int(bulan), int(tanggal)))
+        
     @app.cli.command('browse')
     @click.option('--sn', help="")
     @click.option('--bl', help="'2020-02' untuk bulan Februari 2020")
@@ -412,6 +589,15 @@ def register(app):
             click.echo(ds_num[i])
             click.echo(o)
             
+    @app.cli.command('get_hourly')
+    @click.argument('sn')
+    @click.argument('s')
+    def get_hourly(sn, s):
+        rst = db.execute_sql("SELECT content FROM raw WHERE ")
+        click.echo(sn)
+        click.echo(s)
+    
+    
     @app.cli.command('ps')
     def ps(msg={}):
         '''Memproses data dari primabot'''
@@ -423,61 +609,12 @@ def register(app):
         for r in rst.fetchall():
             ps_rec(r[0])
         '''
-        num = 1000
+        num = 10000
         i = 0
         for m in Raw.select(Raw.content).order_by(Raw.id.desc()).limit(num):
-            click.echo(i)
+            #click.echo(i)
             i += 1
-            ps_rec(m.content.replace("'", "\""))
-            
-    def ps_rec(msg):
-        d = json.loads(msg)
-        sampling = datetime.fromtimestamp(d['sampling'])
-        try:
-            sn = d['device'].split('/')[1]
-        except IndexError:
-            return
-        out = dict(sn=sn, sampling=sampling)
-        #click.echo("{} pada {}".format(sn, sampling))
-        #logger = Logger.get(Logger.sn==sn)
-        #click.echo(logger.location)
-        #get_Hourly
-        if 'tick' in d:
-            tipping_factor = 0.2
-            if 'tipping_factor' in d:
-                tipping_factor = d['tipping_factor']
-            out.update({'tick': d['tick']})
-            #click.echo('tick: {} * {}'.format(d['tick'], tipping_factor))
-        if 'temperature' in d:
-            out.update({'temperature': d['temperature']})
-        if 'humidity' in d:
-            out.update({'humidity': d['humidity']})
-        if 'win_speed' in d:
-            out.update({'wind_speed': d['wind_speed']})
-        if 'wind_direction' in d:
-            out.update({'wind_direction': d['wind_direction']})
-        if 'sun_radiation' in d:
-            out.update({'sun_radiation': d['sun_radiation']})
-        if 'distance' in d:
-            out.update({'distance': d['distance']})
-            sensor_height = 0
-            sensor_resolution = 0
-            if 'sensor_height' in d:
-                sensor_height = d['sensor_height']
-            if 'sensor_resolution' in d:
-                sensor_resolution = d['sensor_resolution']
-            #click.echo('dist: {} {} {}'.format(d['distance'], sensor_height, sensor_resolution))
-            #click.echo('distance: {}, sensor_height: {}, sensor_resolution: {}'.format(d['distance'], d['sensor_height'], d['sensor_resolution']))
-        #click.echo(datetime.fromtimestamp(d['sampling']))
-        if 'wl_scale' in d:
-            out.update({'wl_scale': d['wl_scale']})
-            # long map(long x, long in_min, long in_max, long out_min, long out_max) {
-            #   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-            # }
-            # in_min = 0, out_min = 1023 (atmega 328p)
-            # out_min = 0 (dasar sungai)
-            # out_max = Muka Air Maksimum (config by user)
-            # 
- 
-        click.echo(out)
-        
+            out = ps_rec(m.content.replace("'", "\""))
+            if out:
+                to_hourly(out)
+

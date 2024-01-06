@@ -25,17 +25,10 @@
   </div>
   <div class="row">
     <div class="col-sm-8"><h2 class="text-center fs-4"><a href="{{ url_for('pos.show', id=pos.id) }}?s={{_tgl.strftime('%Y/%m/%d') }}" class="me-5 btn btn-light"><i class="bi bi-chevron-left"></i></a> {{ tgl.strftime('%d %b %Y') }} <a href="{{ url_for('pos.show', id=pos.id)}}?s={{tgl_.strftime('%Y/%m/%d') }}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
+      {% for h in hourly_ %}
+      <li>{{ h.sampling }} {{ h.rain }}</li>
+      {% endfor %}
       <canvas id="chart_hujan_hari"></canvas>
-      <code>
-      {% for i,b in raws.items() %}
-      {{ i }} {{ b }}
-      {% endfor %}
-    </code>
-    <code>
-      {% for i,b in rains.items() %}
-      {{ i }} {{ b }}
-      {% endfor %}
-    </code>
     </div>
     <div class="col-sm-4">
       {% if pos.logger_set %}
@@ -120,7 +113,7 @@
       label: 'Curah Hujan per jam',
       backgroundColor: 'rgb(13, 110, 253)',
       borderColor: 'rgb(255, 99, 132)',
-      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 2, 12, 3, 2],
+      data: [{% for r in hourly_ %}{{ r.rain }}, {% endfor %}],
     }]
   };
 
