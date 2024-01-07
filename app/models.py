@@ -2,6 +2,7 @@ import datetime
 import base64
 import os
 import json
+from zoneinfo import ZoneInfo
 import pandas as pd
 from enum import unique
 from flask import url_for
@@ -21,6 +22,34 @@ class Raw(db.Model):
     content = pw.TextField()
     received = pw.DateTimeField()
     sn = pw.CharField(max_length=10)
+    
+    @staticmethod
+    def to_daily(msg: dict):
+        try:
+            msg['sampling']
+            sn = msg['device'].split('/')[1]
+        except KeyError:
+            return
+        except ValueError:
+            return
+        try:
+            logger = Logger.get(sn=sn)
+        except:
+            return
+
+        out = {'sampling': datetime.datetime.fromtimestamp(msg['sampling']) }
+        tz = ZoneInfo('Asia/Jakarta')
+        if logger.tenant.timezone:
+            tz = ZoneInfo(logger.tenant.timezone)
+        out['sampling'] = out['sampling'].astimezone(tz)
+        
+        daily, created = Daily.get_or_create(sn=sn, sampling=out['sampling'], defaults={'content': json.dumps([msg])})
+        if not created:
+            content = json.loads(daily.content)
+            content.append(msg)
+            daily.content = json.dumps(content)
+            daily.save()
+        print(daily.id)        
     
 
 class Tenant(db.Model):
@@ -240,7 +269,7 @@ class Daily(db.Model):
     '''Data per Hari, komilasi dari Hourly'''
     location = pw.ForeignKeyField(Location, null=True)
     sn = pw.CharField(max_length=10)
-    sampling = pw.DateField() # Tanggal, start jam 7, pada hari lalu
+    sampling = pw.DateField() # Tanggal, start at jam 0
     rain = pw.IntegerField(null=True)
     tick = pw.IntegerField(null=True)
     distance = pw.FloatField(null=True) # data terakhir pada hari
@@ -258,8 +287,18 @@ class Daily(db.Model):
     num_start = pw.IntegerField(default=0) # banyaknya restart primabot pada jam ini
     content = pw.TextField(null=True)
     
+    def sehat(self, sampling=datetime.date.today):
+        newlist = [[r for r in json.loads(self.content) 
+                    if datetime.datetime.fromtimestamp(r['sampling']).hour == h] for h in range(0, 24)]
+        t = dict([(i,0) for i in range(0, 24)])
+        t.update(dict([(datetime.datetime.fromtimestamp(o[0]['sampling']).hour, len(o)) for o in newlist if len(o)]))
+        return t
+        
     class Meta:
         order_by = ['-sampling']
+        indexes = (
+            (('sn', 'sampling'), True),
+        )
         
 
 class Hourly(db.Model):

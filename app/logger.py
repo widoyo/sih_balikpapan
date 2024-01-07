@@ -48,6 +48,7 @@ def sehat():
         sampling = datetime.date.today()
     else:
         sampling = datetime.datetime.strptime(sampling, '%Y-%m-%d')
+    
     next_s = sampling + datetime.timedelta(days=1)
     prev_s = sampling - datetime.timedelta(days=1)
     return render_template('logger/sehat.html', logger_list=logger_list,
