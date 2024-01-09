@@ -50,9 +50,10 @@ class Raw(db.Model):
             defaults={'content': json.dumps([msg]), 'location': location})
         if not created:
             content = json.loads(daily.content)
-            content.append(msg)
-            daily.content = json.dumps(content)
-            daily.save()
+            if msg not in content:
+                content.append(msg)
+                daily.content = json.dumps(content)
+                daily.save()
     
 
 class Tenant(db.Model):
@@ -298,7 +299,15 @@ class Daily(db.Model):
         return t
     
     def rain(self):
-        out = []
+        this_day = [r for r in json.loads(self.content) if datetime.datetime.fromtimestamp(r['sampling']).hour >= 7]
+        next_day = Daily.select().where(Daily.sn==self.sn, Daily.sampling==self.sampling + datetime.timedelta(days=1)).first()
+        this_day = this_day + [r for r in json.loads(next_day.content) if datetime.datetime.fromtimestamp(r['sampling']).hour < 7]
+        hourly_this_day = [[r for r in this_day if datetime.datetime.fromtimestamp(r['sampling']).hour == i] for i in range(0, 24)]
+        
+        hours = []
+        out = dict([(i, (0, 0)) for i in range(0, 24)]) # tick, num 
+        out.update(dict([(datetime.datetime.fromtimestamp(r[0]['sampling']), (sum([j['tick'] for j in r]), len(r))) for r in hourly_this_day if len(r)]))
+        
         return out
         
     class Meta:
