@@ -4,17 +4,11 @@ from flask import Blueprint, request, render_template
 from flask_login import current_user, login_required
 import pandas as pd
 
-from .models import Logger, Location, Raw
+from .models import Logger, Location, Raw, Daily
 from .forms import LoggerForm
 
 bp = Blueprint('logger', __name__)
 
-'''
-@bp.before_request
-def before_request():
-    if current_user.is_authenticated:
-        current_user.last_seen = datetime.utcnow()
-'''
 
 @bp.route('/<sn>/edit')
 @login_required
@@ -48,10 +42,16 @@ def sehat():
         sampling = datetime.date.today()
     else:
         sampling = datetime.datetime.strptime(sampling, '%Y-%m-%d')
+    ds = dict([(d.sn, d.sehat()) for d in Daily.select().where(Daily.sn.in_([l.sn for l in logger_list]), Daily.sampling==sampling)])
+    logger_sehat_list = []
+    
+    for ll in logger_list:
+        ll.sehat = ds.get(ll.sn)
+        logger_sehat_list.append(ll)
     
     next_s = sampling + datetime.timedelta(days=1)
     prev_s = sampling - datetime.timedelta(days=1)
-    return render_template('logger/sehat.html', logger_list=logger_list,
+    return render_template('logger/sehat.html', logger_list=logger_sehat_list,
                            sampling=sampling, next_s=next_s, prev_s=prev_s)
 
 
