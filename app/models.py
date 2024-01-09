@@ -1,6 +1,5 @@
 import datetime
 import base64
-import os
 import json
 from zoneinfo import ZoneInfo
 import pandas as pd
@@ -34,7 +33,7 @@ class Raw(db.Model):
             return
         try:
             logger = Logger.get(sn=sn)
-        except:
+        except Exception as e:
             return
 
         out = {'sampling': datetime.datetime.fromtimestamp(msg['sampling']) }
@@ -42,14 +41,18 @@ class Raw(db.Model):
         if logger.tenant.timezone:
             tz = ZoneInfo(logger.tenant.timezone)
         out['sampling'] = out['sampling'].astimezone(tz)
-        
-        daily, created = Daily.get_or_create(sn=sn, sampling=out['sampling'], defaults={'content': json.dumps([msg])})
+
+        location = None        
+        if logger.location:
+            location = logger.location
+        daily, created = Daily.get_or_create(
+            sn=sn, sampling=out['sampling'], 
+            defaults={'content': json.dumps([msg]), 'location': location})
         if not created:
             content = json.loads(daily.content)
             content.append(msg)
             daily.content = json.dumps(content)
             daily.save()
-        print(daily.id)        
     
 
 class Tenant(db.Model):
@@ -287,12 +290,16 @@ class Daily(db.Model):
     num_start = pw.IntegerField(default=0) # banyaknya restart primabot pada jam ini
     content = pw.TextField(null=True)
     
-    def sehat(self, sampling=datetime.date.today):
+    def sehat(self):
         newlist = [[r for r in json.loads(self.content) 
                     if datetime.datetime.fromtimestamp(r['sampling']).hour == h] for h in range(0, 24)]
         t = dict([(i,0) for i in range(0, 24)])
         t.update(dict([(datetime.datetime.fromtimestamp(o[0]['sampling']).hour, len(o)) for o in newlist if len(o)]))
         return t
+    
+    def rain(self):
+        out = []
+        return out
         
     class Meta:
         order_by = ['-sampling']
