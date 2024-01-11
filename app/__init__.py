@@ -15,7 +15,7 @@ from flask_login import LoginManager, login_required, login_user, logout_user, c
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
-from flask_debugtoolbar import DebugToolbarExtension
+#from flask_debugtoolbar import DebugToolbarExtension
 
 from app.forms import ManualChForm, ManualTmaForm, UserForm, DataUploadForm, DataDownloadForm
 from app.models import Location, Hourly, Offline, Ws, Das
@@ -26,7 +26,7 @@ from flask_marshmallow import Marshmallow
 
 from config import Config
 
-debug_toolbar = DebugToolbarExtension()
+#debug_toolbar = DebugToolbarExtension()
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()
@@ -341,7 +341,7 @@ def initialize_extensions(app):
     from app.models import db
     login_manager.init_app(app)
     db.init_app(app)
-    debug_toolbar.init_app(app)
+    #debug_toolbar.init_app(app)
     apifairy.init_app(app)
     ma.init_app(app)
 

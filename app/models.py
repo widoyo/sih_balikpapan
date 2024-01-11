@@ -23,7 +23,15 @@ class Raw(db.Model):
     sn = pw.CharField(max_length=10)
     
     @staticmethod
-    def to_daily(msg: dict):
+    def to_daily(sn: str, sampling: datetime):
+        daily, created = Daily.get_or_create(sn=sn, sampling=sampling, defaults={'content': json.dumps([])})
+        for d in daily.repopulate():
+            Raw._to_daily(d)
+        return daily
+
+        
+    @staticmethod
+    def _to_daily(msg: dict):
         try:
             msg['sampling']
             sn = msg['device'].split('/')[1]
@@ -50,7 +58,7 @@ class Raw(db.Model):
             defaults={'content': json.dumps([msg]), 'location': location})
         if not created:
             content = json.loads(daily.content)
-            if msg not in content:
+            if msg['sampling'] not in [c['sampling'] for c in content]:
                 content.append(msg)
                 daily.content = json.dumps(content)
                 daily.save()
@@ -309,6 +317,26 @@ class Daily(db.Model):
         out.update(dict([(datetime.datetime.fromtimestamp(r[0]['sampling']), (sum([j['tick'] for j in r]), len(r))) for r in hourly_this_day if len(r)]))
         
         return out
+    
+    def repopulate(self, source='raw2'):
+        '''Mengisi field content'''
+        
+        try:
+            logger = Logger.get(sn=self.sn)
+            tz = logger.tenant.timezone
+        except:
+            tz = 'Asia/Jakarta'
+        sampling = datetime.datetime.combine(self.sampling, datetime.time())
+        sampling = sampling.astimezone(ZoneInfo(tz))
+        awal = int(sampling.timestamp())
+        akhir = int(sampling.replace(hour=23, minute=56).timestamp())
+        
+        cursor = db.database.execute_sql(
+            "SELECT content FROM raw \
+                WHERE content->>'device' LIKE %s \
+                    AND (content->>'sampling')::BIGINT BETWEEN %s AND %s ", ('%'+self.sn+'%', awal, akhir))
+        return [c[0] for c in cursor]
+        
         
     class Meta:
         order_by = ['-sampling']
