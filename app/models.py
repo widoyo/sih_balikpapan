@@ -306,18 +306,26 @@ class Daily(db.Model):
         t.update(dict([(datetime.datetime.fromtimestamp(o[0]['sampling']).hour, len(o)) for o in newlist if len(o)]))
         return t
     
-    def rain(self):
+    def hourly_rain(self):
         this_day = [r for r in json.loads(self.content) if datetime.datetime.fromtimestamp(r['sampling']).hour >= 7]
         next_day = Daily.select().where(Daily.sn==self.sn, Daily.sampling==self.sampling + datetime.timedelta(days=1)).first()
-        this_day = this_day + [r for r in json.loads(next_day.content) if datetime.datetime.fromtimestamp(r['sampling']).hour < 7]
+        if next_day:
+            this_day = this_day + [r for r in json.loads(next_day.content) if datetime.datetime.fromtimestamp(r['sampling']).hour < 7]
         hourly_this_day = [[r for r in this_day if datetime.datetime.fromtimestamp(r['sampling']).hour == i] for i in range(0, 24)]
-        
-        hours = []
-        out = dict([(i, (0, 0)) for i in range(0, 24)]) # tick, num 
-        out.update(dict([(datetime.datetime.fromtimestamp(r[0]['sampling']), (sum([j['tick'] for j in r]), len(r))) for r in hourly_this_day if len(r)]))
+        hr = datetime.datetime.combine(self.sampling, datetime.time(7))
+        out = dict([(hr + datetime.timedelta(hours=i), (0, 0)) for i in range(0, 24)]) # tick, num 
+        out.update(dict([(datetime.datetime.fromtimestamp(r[0]['sampling']).replace(minute=0), (sum([j['tick'] for j in r]), len(r))) for r in hourly_this_day if len(r)]))
         
         return out
     
+    def rain(self):
+        rain, num = (0, 0)
+        if self.hourly_rain():
+            logger = Logger.get(sn=self.sn)
+            rain = sum([v[0] for k, v in self.hourly_rain().items()]) * logger.tipp_fac
+            num = sum([v[1] for k, v in self.hourly_rain().items()])
+        return rain, num
+        
     def repopulate(self, source='raw2'):
         '''Mengisi field content'''
         

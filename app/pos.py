@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 from playhouse.flask_utils import get_object_or_404
 from peewee import Cast
 import pandas as pd
-from .models import Location, Das, Ws, Hourly, db
+from .models import Location, Das, Ws, Hourly, Logger, Daily
 from .forms import PosForm, UserForm, NoteForm
 
 bp = Blueprint('pos', __name__)
@@ -29,18 +29,34 @@ def pch():
     start = tgl.replace(hour=7)
     end = (tgl + timedelta(days=1)).replace(hour=6)
     pch = Location.select().where(Location.tipe=='1', Location.tenant==current_user.tenant)
-    hch = [{'pch': p, 'pagi': None, 'siang': None, 'malam': None, 
-            'dini': None, 'telemetri': None, 'manual': None} for p in pch]
+    hch = dict([(p.id, {'pch': p, 'pagi': None, 'siang': None, 'malam': None, 
+            'dini': None, 'telemetri': None, 'manual': None}) for p in pch])
     
     #sql = "SELECT * from hourly WHERE location_id IN () AND sampling BETWEEN AND GROUP BY location_id"
-    hourly_ch = Hourly.select().where((Hourly.location.in_(pch)) & (Hourly.sampling.between(start, end))).order_by(Hourly.location, Hourly.sampling)
+    hourly_ch = dict([(d.location_id, d) for d in Daily.select().where((Daily.location.in_(pch)) & (Daily.sampling==tgl.date())).order_by(Daily.location, Daily.sampling)])
+    for k, v in hourly_ch.items():
+        try: 
+            logger = Logger.get(sn=k)
+            tf = logger.tipp_fac
+        except:
+            tf = 0.2
+        hch[k]['telemetri'] = "%0.1f" % v.rain()[0]
+        hch[k]['manual'] = v.m_rain
+        pagi = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 6 and h.hour < 13]) * tf
+        siang = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 13 and h.hour < 19]) * tf
+        malam = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 19 and h.hour < 23]) * tf
+        dini = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 1 and h.hour < 7]) * tf
+        hch[k]['pagi'] = pagi and "%0.1f" % pagi or '-'
+        hch[k]['siang'] = siang and "%0.1f" % siang or '-'
+        hch[k]['malam'] = malam and "%0.1f" % malam or '-'
+        hch[k]['dini'] = dini and "%0.1f" % dini or '-'
     segmented_ch = []
-    for h in hourly_ch:
-        segmented_ch[h.location.id]
+#    for h in hourly_ch:
+#        segmented_ch[h.location.id]
     # output: pos|7-13|13-19|19-01|01-07|total
     return render_template(
         'pos/pch.html', 
-        poses=hch, 
+        poses=hch.values(), 
         tgl=tgl, 
         _tgl=tgl - timedelta(days=1), 
         tgl_= tgl + timedelta(days=1),
@@ -89,10 +105,14 @@ def show_sebulan(id, tahun, bulan):
     ssd = bulan + timedelta(days=32)
     id = int(id.split('-')[0])
     pos = get_object_or_404(Location, (Location.id == id))
+    data_sebulan = Daily.select().where(
+        Daily.location_id==id, Daily.sampling.year==bulan.year, 
+        Daily.sampling.month==bulan.month)
     if pos.tipe not in ('1', '2', '3'):
         return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
     return render_template('pos/show_sebulan_{}.html'.format(pos.tipe), 
-                           pos=pos, bln=bulan, _bln=sbl, bln_=ssd)
+                           pos=pos, bln=bulan, data_sebulan=data_sebulan,
+                           _bln=sbl, bln_=ssd)
 
 
 @bp.route('/<id>/<int:tahun>')
@@ -131,12 +151,19 @@ def show(id):
     pos = get_object_or_404(Location, (Location.id == id))
     if pos.tipe not in ('1', '2', '3'):
         return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
-    hourly_ = Hourly.select().where((Hourly.location_id==id) & (Hourly.sampling.between(_sta, _end)))
+    thisday_ = Daily.select().where((Daily.location_id==id) & (Daily.sampling==_sta.date())).first()
+    num_data_ = 0
+    hourlyrain_  = {}
+    rain_ = 0
+    if thisday_:
+        hourlyrain_ = thisday_.hourly_rain()
+        num_data_ = thisday_.rain()[1]
+        rain_ = thisday_.rain()[0]
     note_form = NoteForm(object_type='location', object_id=pos.id)
     return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, 
                            tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), 
                            note_form=note_form, show=show,
-                           hourly_=hourly_)
+                           hourlyrain=hourlyrain_, num_data=num_data_, rain=rain_)
 
     
 @bp.route('/<id>/pd')
