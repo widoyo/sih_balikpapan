@@ -24,7 +24,8 @@ def pch():
     try:
         tahun,bulan,tanggal = sampling.split('/')
     except:
-        tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
+        yesterday = datetime.today() - timedelta(days=1)
+        tahun,bulan,tanggal = yesterday.strftime('%Y/%m/%d').split('/')
     tgl = datetime(int(tahun), int(bulan), int(tanggal))
     start = tgl.replace(hour=7)
     end = (tgl + timedelta(days=1)).replace(hour=6)
@@ -44,12 +45,14 @@ def pch():
         hch[k]['manual'] = v.m_rain
         pagi = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 6 and h.hour < 13]) * tf
         siang = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 13 and h.hour < 19]) * tf
-        malam = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 19 and h.hour < 23]) * tf
+        malam = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 19 and h.hour <= 23]) * tf
+        malam += sum([r[0] for h, r in v.hourly_rain().items() if h.hour >= 0 and h.hour <= 1]) * tf
         dini = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 1 and h.hour < 7]) * tf
         hch[k]['pagi'] = pagi and "%0.1f" % pagi or '-'
         hch[k]['siang'] = siang and "%0.1f" % siang or '-'
         hch[k]['malam'] = malam and "%0.1f" % malam or '-'
         hch[k]['dini'] = dini and "%0.1f" % dini or '-'
+        hch[k]['id'] = v.id
     segmented_ch = []
 #    for h in hourly_ch:
 #        segmented_ch[h.location.id]
@@ -155,14 +158,16 @@ def show(id):
     num_data_ = 0
     hourlyrain_  = {}
     rain_ = 0
+    m_rain_ = 0
     if thisday_:
         hourlyrain_ = thisday_.hourly_rain()
         num_data_ = thisday_.rain()[1]
         rain_ = thisday_.rain()[0]
+        m_rain_ = thisday_.m_rain
     note_form = NoteForm(object_type='location', object_id=pos.id)
     return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, 
                            tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), 
-                           note_form=note_form, show=show,
+                           note_form=note_form, show=show, m_rain=m_rain_, 
                            hourlyrain=hourlyrain_, num_data=num_data_, rain=rain_)
 
     

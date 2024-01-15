@@ -43,12 +43,16 @@
     <tr>
       <td>{{ loop.index }}</td>
       <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{p['pch'].id}}-{{p['pch'].nama}}/{{ tgl.strftime('%Y/%m')}}">{{ p['pch'].nama }}</a></td>
-      <td class="text-end rain-val">{{ p.pagi or '-'}}</td>
-      <td class="text-end rain-val">{{ p.siang or '-' }}</td>
-      <td class="text-end rain-val">{{ p.malam or '-' }}</td>
-      <td class="text-end rain-val">{{ p.dini or '-' }}</td>
+      <td class="text-end">{{ p.pagi or '-'}}</td>
+      <td class="text-end">{{ p.siang or '-' }}</td>
+      <td class="text-end">{{ p.malam or '-' }}</td>
+      <td class="text-end">{{ p.dini or '-' }}</td>
       <td class="text-end rain-val">{{ p.telemetri or '-' }}</td>
-      <td class="text-end rain-val">{{ p.manual or '-' }}</td>
+      <td class="text-end rain-val"><span><abbr class="editable" 
+        data-title="Curah Hujan {{ tgl.strftime('%d %b %y') }}" data-type="text" data-step="0.1" 
+        data-obj="daily" data-name="m_rain" 
+        data-pk="{{ p.id }}">
+        {{ p.manual or '-' }}</abbr></span></td>
       
     </tr>
     {% endfor %}
@@ -56,6 +60,22 @@
 </table>
     </div>
     <div class="col-sm-4">
+      <p>Skala Curah Hujan per hari (24 jam)</p>
+      <table>
+        <tr>
+          <td class="pe-4">100 - 150</td><th style="color: rgb(255, 32, 32)">Hujan Sangat Lebat</th>
+        </tr>
+        <tr>
+          <td>50 - 100</td><th style="color: rgb(255, 165, 0)">Hujan Lebat</th>
+        </tr>
+        <tr>
+          <td>20 - 50</td><th style="color: rgb(245, 223, 77)">Hujan Sedang</th>
+        </tr>
+        <tr>
+          <td>0,5 - 20</td><th style="color: rgb(32, 255, 32)">Hujan Ringan</th>
+        </tr>
+      </table>      
+
     </div>
 </div>
   </div>
@@ -63,5 +83,22 @@
 </div>
 {% endblock %}
 {% block js_foot %}
+<script src="/static/js/dark-editable.js"></script>
+<script>
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+  const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
 
-{% endblock %}
+  const editable = document.querySelectorAll('.editable')
+  let i = 0;
+  for (i=0; i < editable.length; i++) {
+    new DarkEditable(editable[i], {
+      url: '/api/update',
+      success: (resp, newVal) => {
+        if (resp.status == 'error') {
+          return resp.msg
+        }
+      }
+    })
+  }
+</script>
+  {% endblock %}

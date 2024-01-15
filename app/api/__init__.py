@@ -8,12 +8,17 @@ bp = Blueprint('api', __name__)
 @bp.route('update', methods=['POST'])
 def update():
     data = request.form
-    if data.get('obj') not in ['logger', 'location']:
+    if data.get('obj') not in ['logger', 'location', 'daily']:
         return "obj tidak valid", 400
     table = data.get('obj')
     field = data.get('name')
     oid = data.get('pk')
     val = data.get('value')
+    if field == 'm_rain':
+        sql = "UPDATE {table} set {nama}={nilai} WHERE id={oid}".format(table=table, 
+                                                                    nama=field, 
+                                                                    nilai=val, 
+                                                                    oid=oid)
     if field == 'tipp_fac':
         sql = "UPDATE {table} set {nama}={nilai} WHERE id={oid}".format(table=table, 
                                                                     nama=field, 

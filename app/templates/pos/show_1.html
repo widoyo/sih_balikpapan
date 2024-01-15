@@ -14,7 +14,7 @@
           <li class="breadcrumb-item active" aria-current="page">{{ pos.nama }}</li>
         </ol>
       </nav>
-      <h2><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span><abbr class="editable" data-obj="location" data-type="text" id="nama" data-pk="{{ pos.id }}" data-title="Nama Pos">{{ pos.nama }}</abbr> <span class="fs-6 badge bg-primary rounded-pill">PCH</span></h2>
+      <h2><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span>{{ pos.nama }} <span class="fs-6 badge bg-primary rounded-pill">PCH</span></h2>
       <span class="small">Desa</span>
       <div class="btn-group float-end" role="group">
         <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-primary">Sehari</a>
@@ -31,9 +31,10 @@
     <div class="col-sm-4">
       {{ booth.open(tgl.strftime('%d %b %Y'))}}
       <p>Banyak Data: {{ '%0.1f' % (num_data/288 * 100)|float }} %</p>
-      <p>Curah Hujan: {{ '%0.1f' % rain }} mm</p>
+      <p>Curah Hujan Telemetri: {{ '%0.1f' % rain }} mm</p>
+      <p>Curah Hujan Manual: {{ '%0.1f' % m_rain }} mm</p>
       {{ booth.close() }}
-      {{ booth.open('Acuan Curah Hujan per Jam') }}
+      {{ booth.open('Curah Hujan per Jam') }}
       <table>
         <tr>
           <td class="pe-4">&gt; 20</td><th style="color: rgb(255, 32, 32)">Hujan Sangat Lebat</th>
@@ -60,8 +61,6 @@
           data-pk="{{ pos.logger_set[0].id }}">
           {{pos.logger_set[0].tipp_fac}}</abbr></code> mm 
           </p>
-      <p>Banyak Data: {{ '%0.2f' % (num_data/288 * 100)|float }} %</p>
-      <p>Curah Hujan: {{ '%0.2f' % rain }} mm</p>
       {{ booth.close() }}
       {% else %}
       {{ booth.open('Data Logger')}}
