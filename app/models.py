@@ -306,7 +306,16 @@ class Daily(db.Model):
         t.update(dict([(datetime.datetime.fromtimestamp(o[0]['sampling']).hour, len(o)) for o in newlist if len(o)]))
         return t
     
+    def wlevels(self):
+        '''return pagi, siang sore'''
+        if 'distance' not in self.content:
+            return {}
+        data = [d for d in json.loads(self.content) if datetime.datetime.fromtimestamp(d['sampling']).hour in (6, 12, 17, 18)]
+        return data
+        
     def hourly_rain(self):
+        if 'tick' not in self.content:
+            return {}
         this_day = [r for r in json.loads(self.content) if datetime.datetime.fromtimestamp(r['sampling']).hour >= 7]
         next_day = Daily.select().where(Daily.sn==self.sn, Daily.sampling==self.sampling + datetime.timedelta(days=1)).first()
         if next_day:

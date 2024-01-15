@@ -11,7 +11,7 @@
         </ol>
       </nav>
 <h2>{{ pos.nama }} <span class="fs-6 badge bg-primary rounded-pill">PCH</span></h2>
-      <span class="small">Desa</span>
+<span class="small">{{ pos.desa or ''}} {{ pos.kecamatan or ''}} {{ pos.kabupaten or ''}}</span>
       <div class="btn-group float-end" role="group">
         <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>
         <a href="{{ url_for('pos.show', id=pos.id) }}" class="btn btn-primary">Sebulan</a>
@@ -21,6 +21,9 @@
   </div>
   <div class="row">
     <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
+      {% for d in data_sebulan %}
+      <li>{{ d.sampling }} {% for k, v in d.hourly_rain().items() %}{{ k.day }}/{{ k.hour }}-{{ v[1] }}  {% endfor %}</li>
+      {% endfor %}
       <canvas id="chart_hujan_hari"></canvas>
     </div>
     <div class="col-sm-4">
@@ -28,6 +31,22 @@
       <p>Dasarian (10 harian)</p>
       <p>HTH</p>
       <p>Download</p>
+      <p>Skala Curah Hujan per hari (24 jam)</p>
+      <table>
+        <tr>
+          <td class="pe-4">100 - 150</td><th style="color: rgb(255, 32, 32)">Hujan Sangat Lebat</th>
+        </tr>
+        <tr>
+          <td>50 - 100</td><th style="color: rgb(255, 165, 0)">Hujan Lebat</th>
+        </tr>
+        <tr>
+          <td>20 - 50</td><th style="color: rgb(245, 223, 77)">Hujan Sedang</th>
+        </tr>
+        <tr>
+          <td>0,5 - 20</td><th style="color: rgb(32, 255, 32)">Hujan Ringan</th>
+        </tr>
+      </table>
+
     </div>
   </div>
 </div>
@@ -108,85 +127,50 @@
               type: 'line',
               yMin: 5,
               yMax: 5,
-              borderColor: 'rgb(255, 99, 132)',
-              borderWidth: 0.5,
+              borderColor: 'rgba(32, 255, 32, 0.5)',
+              borderWidth: 10,
             },
             line2: {
               type: 'line',
               yMin: 20,
               yMax: 20,
-              borderColor: 'rgb(255, 99, 132)',
-              borderWidth: 0.5,
-            },
-            line2: {
-              type: 'line',
-              yMin: 50,
-              yMax: 50,
-              borderColor: 'rgb(255, 99, 132)',
-              borderWidth: 0.5,
+              borderColor: 'rgba(245, 223, 77, 0.5)',
+              borderWidth: 10,
             },
             line3: {
               type: 'line',
-              yMin: 100,
-              yMax: 100,
-              borderColor: 'rgb(255, 99, 132)',
-              borderWidth: 0.5,
+              yMin: 50,
+              yMax: 50,
+              borderColor: 'rgba(255, 165, 0, 0.5)',
+              borderWidth: 10,
             },
             line4: {
               type: 'line',
-              yMin: 20,
-              yMax: 20,
-              borderColor: 'rgb(255, 99, 132)',
-              borderWidth: 0.5,
+              yMin: 100,
+              yMax: 100,
+              borderColor: 'rgba(255, 32, 32, 0.5)',
+              borderWidth: 10,
             },
             vline1: {
               type: 'line',
               xMin: 9,
               xMax: 9,
-              borderColor: 'rgba(255, 99, 132, 0.5)',
+              borderColor: 'rgba(255, 99, 132, 0.1)',
               borderWidth: 10,
             },
             vline2: {
               type: 'line',
               xMin: 19,
               xMax: 19,
-              borderColor: 'rgba(255, 99, 132, 0.5)',
+              borderColor: 'rgba(255, 99, 132, 0.1)',
               borderWidth: 10,
-            },
-            label1: {
-              type: 'label',
-              position: 'start',
-              xValue: 0,
-              yValue: 7,
-              content: 'hujan sangat ringan'
-            },
-            label2: {
-              type: 'label',
-              position: 'start',
-              xValue: 0,
-              yValue: 20,
-              content: 'hujan ringan'
-            },
-            label3: {
-              type: 'label',
-              position: 'start',
-              xValue: 0,
-              yValue: 50,
-              content: 'hujan sedang'
-            },
-            label4: {
-              type: 'label',
-              position: 'start',
-              xValue: 0,
-              yValue: 100,
-              content: 'hujan lebat'
             },
             label5: {
               type: 'label',
               position: 'start',
               xValue: 0,
               yValue: 120,
-              content: 'hujan sangat lebat'
+              content: ''
             }
 
           }

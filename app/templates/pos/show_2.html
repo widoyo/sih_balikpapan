@@ -84,22 +84,6 @@
           {% endfor%}    
         </tbody>
       </table>
-      <form action="." method="POST" style="display:none">
-        {{ user_form.hidden_tag() }}
-        <div class="mb-3">Location: {{ pos.nama }}</div>
-        <div class="mb-3">
-          {{ user_form.username.label(class="form-label") }}
-          {{ user_form.username(class="form-control") }}
-          <div class="form-text">Maksimum 12 alfanumerik(a-z, 0-9)</div>
-        </div>
-        <div class="mb-3">
-          {{ user_form.password.label(class="form-label") }}
-          {{ user_form.password(class="form-control") }}
-          <div class="form-text"></div>
-        </div>
-
-        <input type="submit" class="btn btn-primary" value="Simpan">  
-      </form>
     </div>
     </div>
   </div>
