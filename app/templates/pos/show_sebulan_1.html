@@ -33,7 +33,7 @@
         <tr>
           <th>CH Telemetri</th>
           {% for d in data_sebulan %}
-          <td>{{ d.1 or '-'}}</td>
+          <td>{% if d.1 %}{{ ("%0.1f" % d.1) }}{%else %}-{% endif %}</td>
           {% endfor %}          
         </tr>
         <tr>
