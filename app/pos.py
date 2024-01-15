@@ -106,15 +106,19 @@ def show_sebulan(id, tahun, bulan):
     bulan = datetime(tahun, bulan, 1)
     sbl = bulan - timedelta(days=1)
     ssd = bulan + timedelta(days=32)
+    end_bl = (ssd.replace(day=1) - timedelta(days=1)).day
     id = int(id.split('-')[0])
     pos = get_object_or_404(Location, (Location.id == id))
-    data_sebulan = Daily.select().where(
+    data_sebulan = dict([((bulan + timedelta(days=i)).date(), (0, 0, 0)) for i in range(0, end_bl)])
+    data_sebulan.update(dict([(d.sampling, (d.rain()[0], d.rain()[1], d.m_rain)) for d in Daily.select().where(
         Daily.location_id==id, Daily.sampling.year==bulan.year, 
-        Daily.sampling.month==bulan.month)
+        Daily.sampling.month==bulan.month)]))
+    out = [(k, v[0], v[1], v[2]) for k, v in data_sebulan.items()]
+    
     if pos.tipe not in ('1', '2', '3'):
         return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
     return render_template('pos/show_sebulan_{}.html'.format(pos.tipe), 
-                           pos=pos, bln=bulan, data_sebulan=data_sebulan,
+                           pos=pos, bln=bulan, data_sebulan=out,
                            _bln=sbl, bln_=ssd)
 
 

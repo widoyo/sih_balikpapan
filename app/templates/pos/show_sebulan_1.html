@@ -21,17 +21,40 @@
   </div>
   <div class="row">
     <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
-      {% for d in data_sebulan %}
-      <li>{{ d.sampling }} {% for k, v in d.hourly_rain().items() %}{{ k.day }}/{{ k.hour }}-{{ v[1] }}  {% endfor %}</li>
-      {% endfor %}
       <canvas id="chart_hujan_hari"></canvas>
+      <h3>Data Curah Hujan</h3>
+      <table class="table">
+        <tr>
+          <th>Tanggal</th>
+          {% for d in data_sebulan %}
+          <td>{{ d.0.day }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th>CH Telemetri</th>
+          {% for d in data_sebulan %}
+          <td>{{ d.1 or '-'}}</td>
+          {% endfor %}          
+        </tr>
+        <tr>
+          <th>Banyak Data</th>
+          {% for d in data_sebulan %}
+          <td>{{ d.2 or '-'}}</td>
+          {% endfor %}          
+        </tr>
+        <tr>
+          <th>CH Manual</th>
+          {% for d in data_sebulan %}
+          <td>{{ d.3 or '-'}}</td>
+          {% endfor %}          
+        </tr>
+      </table>
     </div>
     <div class="col-sm-4">
-      <p>CH sebulan</p>
-      <p>Dasarian (10 harian)</p>
-      <p>HTH</p>
-      <p>Download</p>
-      <p>Skala Curah Hujan per hari (24 jam)</p>
+      <h4>Curah Hujan Sebulan</h4>
+      <p>Telemetri: {{ data_sebulan|sum(attribute='1')}} mm</p>
+      <p>Manual: {{ data_sebulan|sum(attribute='3') }} mm</p>
+      <p>Skala Curah Hujan / hari</p>
       <table>
         <tr>
           <td class="pe-4">100 - 150</td><th style="color: rgb(255, 32, 32)">Hujan Sangat Lebat</th>
@@ -56,47 +79,31 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
 <script>
-  const labels = [
-    '01',
-    '02',
-    '03',
-    '04',
-    '05',
-    '06',
-    '07',
-    '08',
-    '09',
-    '10',
-    '11',
-    '12',
-    '13',
-    '14',
-    '15',
-    '16',
-    '17',
-    '18',
-    '19',
-    '20',
-    '21',
-    '22',
-    '23',
-    '24',
-    '25',
-    '26',
-    '27',
-    '28',
-    '29',
-    '30',
+  const labels = [{% for t in data_sebulan %}'{{ t[0].day }}', {% endfor %}
   ];
 
   const data = {
     labels: labels,
     datasets: [{
-      label: 'Curah Hujan per Hari',
-      backgroundColor: 'rgb(13, 110, 253)',
+      label: 'CH Telemetri / Hari',
+      backgroundColor: 'rgb(0,191,255)',
       borderColor: 'rgb(255, 99, 132)',
-      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 2, 20, 30, 45],
-    }]
+      data: [{% for r in data_sebulan %}{{ r.1 }}, {% endfor %}],
+    },
+    {
+      label: 'CH Manual / Hari',
+      backgroundColor: 'rgb(0,191,255)',
+      borderColor: 'rgb(255, 99, 132)',
+      data: [{% for r in data_sebulan %}{{ r.3 }}, {% endfor %}],
+    },
+    {
+      label: 'Banyak Data/hari',
+      backgroundColor: 'rgba(211, 211, 211, 0.5)',
+      borderColor: 'rgb(99, 99, 99)',
+      data: [{% for r in data_sebulan %}{{ r.2 }}, {% endfor %}],
+      yAxisID: 'ycount'
+    }
+]
   };
 
   const config = {
@@ -117,7 +124,12 @@
             text: 'mm',
             align: 'end'
           }
+        },
+        ycount: {
+          position: 'right',
+          max: 288,
         }
+
       },
       plugins: {
         autocolors: false,
@@ -156,14 +168,14 @@
               xMin: 9,
               xMax: 9,
               borderColor: 'rgba(255, 99, 132, 0.1)',
-              borderWidth: 10,
+              borderWidth: 2,
             },
             vline2: {
               type: 'line',
               xMin: 19,
               xMax: 19,
               borderColor: 'rgba(255, 99, 132, 0.1)',
-              borderWidth: 10,
+              borderWidth: 2,
             },
             label5: {
               type: 'label',
