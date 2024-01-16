@@ -50,7 +50,7 @@
   const data = {
     labels: labels,
     datasets: [{
-      label: 'Tinggi Muka Air (M)',
+      label: 'Tinggi Muka Air (CM)',
       backgroundColor: 'rgb(255, 99, 132)',
       borderColor: 'rgb(255, 99, 132)',
       data: [{% for wlevel in wlevels %}{% if wlevel.1 %}{{ wlevel.1[-1][1] }}{% endif %}, {% endfor %}],

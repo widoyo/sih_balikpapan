@@ -11,7 +11,7 @@
         </ol>
       </nav>
     <h2>{{ pos.nama }} <span class="fs-6 badge bg-danger rounded-pill">PDA</span></h2>
-      <span class="small">Desa</span>
+      <span class="small">Desa/Kel: {{ pos.desa or '-'}} Kec: {{ pos.kecamatan or '-'}} Kab/Kot: {{ pos.kabupaten or '-'}}</span>
       <div class="btn-group float-end" role="group">
         <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>
         <a href="{{ url_for('pos.show', id=pos.id) }}" class="btn btn-primary">Sebulan</a>
@@ -21,7 +21,7 @@
   </div>
   <div class="row">
     <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
-      <canvas id="chart_hujan_hari"></canvas>
+      <canvas id="chart_wlevel_hari"></canvas>
     </div>
     <div class="col-sm-4">
     <table class="table">
@@ -85,20 +85,21 @@
   const data = {
     labels: labels,
     datasets: [{
-      label: 'Curah Hujan',
-      backgroundColor: 'rgb(13, 110, 253)',
+      label: 'Tinggi Muka Air (CM)',
+      backgroundColor: 'rgb(255, 99, 132)',
       borderColor: 'rgb(255, 99, 132)',
-      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 2, 20, 30, 45],
+      data: [{% for wlevel in wlevels %}{% if wlevel.1 %}{{ wlevel.1[-1][1] }}{% endif %}, {% endfor %}],
+      yAxisID: 'ytele'
     }]
   };
 
   const config = {
-    type: 'bar',
+    type: 'line',
     data: data,
     options: {}
   };
   const myChart = new Chart(
-    document.getElementById('chart_hujan_hari'),
+    document.getElementById('chart_wlevel_hari'),
     config
   )
 

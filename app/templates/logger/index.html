@@ -26,21 +26,25 @@
 <tbody>
   {% for l in loggers %}
   <tr>
-    <td><a href="{{l.sn}}">{{ l.sn }}</a></td>
+    <td style="max-width: 150px;" class="text-truncate"><i class="bi bi-cpu me-1 {% if l.tipe == 'arr' %}text-primary{% elif l.tipe == 'awlr' %}text-danger{% endif %}"></i> <a href="{{ l.sn }}">{{ l.sn }}</a> 
+      <br><i class="bi bi-geo-alt me-1"></i> 
+      <abbr class="editable text-muted fw-light" style="font-size:10pt"
+        data-type="select" data-source='[{% for loc in current_user.tenant.location_set %}{"value": {{ loc.id }}, "text": "{{ loc.nama }}"},{% endfor %}{"value": 0, "text": "Tidak Dipasang"}]' data-pk="{{l.id}}" data-obj="logger" data-name="location_id" data-value="{{l.location.id}}" data-title="Lokasi Logger">{% if l.location %}{{ l.location.nama }}{% else %}-{% endif %}</abbr>
+    </td>
     <td></td>
     <td></td>
     {% if l.tipe == 'arr' %}
-    <td><span class="badge bg-primary rounded-pill">ARR</span></td>
-    <td>Tipping Factor: {{ l.tipp_fac }}</td>
+    <td><span class="badge bg-primary rounded-pill">ARR</span>
+    Tipping Factor: <abbr class="editable" data-obj="logger" data-pk="{{ l.id }}" data-type="text" data-name="tipp_fac" data-title="Tipping Factor">{{ l.tipp_fac }}</abbr></td>
     {% elif l.tipe == 'awlr' %}
-    <td><span class="badge bg-danger rounded-pill">AWLR</span></td>
-    <td>Tinggi Sonar: {{ l.ting_son }}</td>
+    <td><span class="badge bg-danger rounded-pill">AWLR</span>
+    Tinggi Sonar: <abbr class="editable" data-obj="logger" data-name="ting_son" data-pk="{{ l.id }}" data-type="text" title="{{ l.ting_son }}">{{ l.ting_son }}</abbr></td>
     {% elif l.tipe == 'arr-awlr' %}
-    <td><span class="badge bg-primary rounded-pill">ARR</span> <span class="badge bg-danger rounded-pill">AWLR</span></td>
-    <td>Tipping Factor: {{ l.tipp_fac }}<br>Tinggi Sonar {{ l.ting_son }}</td>
+    <td><span class="badge bg-primary rounded-pill">ARR</span> <span class="badge bg-danger rounded-pill">AWLR</span>
+    Tipping Factor: {{ l.tipp_fac }}<br>Tinggi Sonar {{ l.ting_son }}</td>
     {% else %}
-    <td><span class="badge bg-secondary rounded-pill">Klimat</span></td>
-    <td></td>
+    <td><span class="badge bg-secondary rounded-pill">Klimat</span>
+    </td>
     {% endif %}
     
   </tr>
@@ -59,4 +63,22 @@
 </div>
 {% endblock %}
 {% block js_foot %}
-{% endblock %}
+<script src="/static/js/dark-editable.js"></script>
+<script>
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+  const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+
+  const editable = document.querySelectorAll('.editable')
+  let i = 0;
+  for (i=0; i < editable.length; i++) {
+    new DarkEditable(editable[i], {
+      url: '/api/update',
+      success: (resp, newVal) => {
+        if (resp.status == 'error') {
+          return resp.msg
+        }
+      }
+    })
+  }
+</script>
+  {% endblock %}

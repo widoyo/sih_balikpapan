@@ -14,6 +14,17 @@ def update():
     field = data.get('name')
     oid = data.get('pk')
     val = data.get('value')
+    
+    if field == 'location_id':
+        if val == "0":
+            sql = "UPDATE {table} set {nama}=NULL WHERE id={oid}".format(table=table, 
+                                                                    nama=field, 
+                                                                    oid=oid)
+        else:
+            sql = "UPDATE {table} set {nama}={nilai} WHERE id={oid}".format(table=table, 
+                                                                    nama=field, 
+                                                                    nilai=val, 
+                                                                    oid=oid)
     if field == 'm_rain':
         sql = "UPDATE {table} set {nama}={nilai} WHERE id={oid}".format(table=table, 
                                                                     nama=field, 
@@ -29,6 +40,7 @@ def update():
                                                                     nama=field, 
                                                                     nilai=val, 
                                                                     oid=oid)
+        
     db.database.execute_sql(sql)    
     return sql, 200
 
