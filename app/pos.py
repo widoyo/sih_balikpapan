@@ -163,16 +163,21 @@ def show(id):
     hourlyrain_  = {}
     rain_ = 0
     m_rain_ = 0
+    wlevels = []
+    logger = None
     if thisday_:
         hourlyrain_ = thisday_.hourly_rain()
         num_data_ = thisday_.rain()[1]
         rain_ = thisday_.rain()[0]
         m_rain_ = thisday_.m_rain
+        wlevels = thisday_.wlevels()
+        logger = Logger.get(sn=thisday_.sn)
     note_form = NoteForm(object_type='location', object_id=pos.id)
     return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, 
                            tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), 
                            note_form=note_form, show=show, m_rain=m_rain_, 
-                           hourlyrain=hourlyrain_, num_data=num_data_, rain=rain_)
+                           hourlyrain=hourlyrain_, num_data=num_data_, rain=rain_,
+                           wlevels=wlevels, logger=logger)
 
     
 @bp.route('/<id>/pd')

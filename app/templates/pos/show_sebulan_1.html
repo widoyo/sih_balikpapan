@@ -22,40 +22,8 @@
   <div class="row">
     <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
       <canvas id="chart_hujan_hari"></canvas>
-      <h3>Data Curah Hujan</h3>
-      <table class="table">
-        <tr>
-          <th>Tanggal</th>
-          {% for d in data_sebulan %}
-          <td>{{ d.0.day }}</td>
-          {% endfor %}
-        </tr>
-        <tr>
-          <th>CH Telemetri</th>
-          {% for d in data_sebulan %}
-          <td>{% if d.1 %}{{ ("%0.1f" % d.1) }}{%else %}-{% endif %}</td>
-          {% endfor %}          
-        </tr>
-        <tr>
-          <th>Banyak Data</th>
-          {% for d in data_sebulan %}
-          <td>{{ d.2 or '-'}}</td>
-          {% endfor %}          
-        </tr>
-        <tr>
-          <th>CH Manual</th>
-          {% for d in data_sebulan %}
-          <td>{{ d.3 or '-'}}</td>
-          {% endfor %}          
-        </tr>
-      </table>
-    </div>
-    <div class="col-sm-4">
-      <h4>Curah Hujan Sebulan</h4>
-      <p>Telemetri: {{ data_sebulan|sum(attribute='1')}} mm</p>
-      <p>Manual: {{ data_sebulan|sum(attribute='3') }} mm</p>
       <p>Skala Curah Hujan / hari</p>
-      <table>
+      <table class="table" style="max-width: 300px;">
         <tr>
           <td class="pe-4">100 - 150</td><th style="color: rgb(255, 32, 32)">Hujan Sangat Lebat</th>
         </tr>
@@ -66,10 +34,34 @@
           <td>20 - 50</td><th style="color: rgb(245, 223, 77)">Hujan Sedang</th>
         </tr>
         <tr>
-          <td>0,5 - 20</td><th style="color: rgb(32, 255, 32)">Hujan Ringan</th>
+          <td>0,5 - 20</td><th style="color: rgb(32, 99, 255)">Hujan Ringan</th>
         </tr>
       </table>
-
+    </div>
+    <div class="col-sm-4">
+      <h4>Curah Hujan Sebulan</h4>
+      <p>Telemetri: {{ data_sebulan|sum(attribute='1')}} mm</p>
+      <p>Manual: {{ data_sebulan|sum(attribute='3') }} mm</p>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Tgl</th>
+            <th>Telemetri</th>
+            <th>Manual</th>
+            <th>Selisih</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in data_sebulan %}
+          <tr>
+            <td>{{ t.0 }}</td>
+            <td class="text-end">{{ t.1 or '-'}}</td>
+            <td class="text-end">{{ t.3 or '-'}}</td>
+            <td class="text-end"></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

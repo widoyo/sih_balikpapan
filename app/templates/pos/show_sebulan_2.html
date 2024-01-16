@@ -20,16 +20,26 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-8"><p class="text-center">{{ bln.strftime('%b %Y') }}</p>
+    <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
       <canvas id="chart_hujan_hari"></canvas>
     </div>
     <div class="col-sm-4">
-      <div class="row mb-4">
-        <div class="col-3"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}">Sebelum</a></div>
-        <div class="col-6 text-center"><h3 class="">{{bln.strftime('%b %Y')}}</h3></div>
-        <div class="col-3 text-end"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}">Sesudah</a></div>
-      </div>
-      
+    <table class="table">
+      <tr>
+        <th rowspan="2">Tgl</th>
+        <th colspan="2">J 6</th>
+        <th colspan="2">J 12</th>
+        <th colspan="2">J 18</th>
+      </tr>
+      <tr>
+        <td>T</td>
+        <td>M</td>
+        <td>T</td>
+        <td>M</td>
+        <td>T</td>
+        <td>M</td>
+      </tr>
+    </table>      
       <p>Rerata</p>
       <p>Download</p>
     </div>

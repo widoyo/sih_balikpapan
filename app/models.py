@@ -310,8 +310,23 @@ class Daily(db.Model):
         '''return pagi, siang sore'''
         if 'distance' not in self.content:
             return {}
-        data = [d for d in json.loads(self.content) if datetime.datetime.fromtimestamp(d['sampling']).hour in (6, 12, 17, 18)]
-        return data
+        
+        resolusi = 1
+        tinggi_sonar = 10000
+        try:
+            logger = Logger.get(sn=self.sn)
+            resolusi = logger.son_res
+            tinggi_sonar = logger.ting_son
+        except:
+            pass
+        data = [[(datetime.datetime.fromtimestamp(d['sampling']), (tinggi_sonar - d['distance'] * resolusi)) for d in json.loads(self.content) if datetime.datetime.fromtimestamp(d['sampling']).hour ==h] for h in range(0, 24)]
+        ret = []
+        for i in range(len(data)):
+            if data[i]:
+                ret.append((i, data[i]))
+            else:
+                ret.append((i, []))
+        return ret
         
     def hourly_rain(self):
         if 'tick' not in self.content:
