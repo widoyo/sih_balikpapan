@@ -42,6 +42,9 @@
       <h4>Curah Hujan Sebulan</h4>
       <p>Telemetri: {{ "%0.1f" % data_sebulan|sum(attribute='1')}} mm</p>
       <p>Manual: {{ data_sebulan|sum(attribute='3') }} mm</p>
+      <div class="alert alert-success" role="alert">
+        <i>Data manual dapat diisi pada menu <a href="/pos/pch" class="alert-link">Pos Hidrologi | Curah Hujan</a>, pada kolom <b>Manual</b> (paling kanan)</i>
+      </div>
       <table class="table">
         <thead>
           <tr>
