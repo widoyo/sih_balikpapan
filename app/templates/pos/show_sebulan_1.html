@@ -40,7 +40,7 @@
     </div>
     <div class="col-sm-4">
       <h4>Curah Hujan Sebulan</h4>
-      <p>Telemetri: {{ data_sebulan|sum(attribute='1')}} mm</p>
+      <p>Telemetri: {{ "%0.1f" % data_sebulan|sum(attribute='1')}} mm</p>
       <p>Manual: {{ data_sebulan|sum(attribute='3') }} mm</p>
       <table class="table">
         <thead>
@@ -55,7 +55,7 @@
           {% for t in data_sebulan %}
           <tr>
             <td>{{ t.0 }}</td>
-            <td class="text-end">{{ t.1 or '-'}}</td>
+            <td class="text-end">{% if t.1 %}{{ "%0.1f" % t.1 }}{% else %}-{% endif %}</td>
             <td class="text-end">{{ t.3 or '-'}}</td>
             <td class="text-end"></td>
           </tr>
