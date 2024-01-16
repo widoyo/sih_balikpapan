@@ -53,10 +53,7 @@ def pch():
         hch[k]['malam'] = malam and "%0.1f" % malam or '-'
         hch[k]['dini'] = dini and "%0.1f" % dini or '-'
         hch[k]['id'] = v.id
-    segmented_ch = []
-#    for h in hourly_ch:
-#        segmented_ch[h.location.id]
-    # output: pos|7-13|13-19|19-01|01-07|total
+
     return render_template(
         'pos/pch.html', 
         poses=hch.values(), 
@@ -74,8 +71,27 @@ def pda():
     except:
         tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
     tgl = datetime(int(tahun), int(bulan), int(tanggal))
-    pda = Location.select().where(Location.tipe=='2', Location.tenant==current_user.tenant)
-    return render_template('pos/pda.html', poses=pda, tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1))
+    pdas = Location.select().where(Location.tipe=='2', Location.tenant==current_user.tenant)
+    sns = [l.sn for l in current_user.tenant.logger_set]
+    wl_pdas = dict([(l.id, 
+                {'pda': l, 't6': None, 'm6': None, 't12': None, 'm12': None, 't18': None, 'm18': None}) 
+               for l in pdas])
+
+    for harian in Daily.select().where(Daily.location.in_(pdas), Daily.sampling==tgl.date()):
+        for row in harian.wlevels():
+            if len(row[1]):
+                if row[0] == 6:
+                    wl_pdas[harian.location_id].update({'t6': row[1][-1]})
+                if row[0] == 12:
+                    wl_pdas[harian.location_id].update({'t12': row[1][-1]})
+                if row[0] == 18:
+                    wl_pdas[harian.location_id].update({'t18': row[1][-1]})
+                
+        wl_pdas[harian.location_id].update({'m6': harian.m_wlevel_pa})
+        wl_pdas[harian.location_id].update({'m12': harian.m_wlevel_si})
+        wl_pdas[harian.location_id].update({'m18': harian.m_wlevel_so})
+    return render_template('pos/pda.html', poses=wl_pdas.values(), tgl=tgl, _tgl=tgl - timedelta(days=1), 
+                           tgl_= tgl + timedelta(days=1))
 
 @bp.route('/add/', methods=['POST', 'GET'])
 @login_required

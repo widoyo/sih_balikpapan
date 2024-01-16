@@ -45,13 +45,13 @@
     {% for p in poses %}
     <tr>
       <td>{{ loop.index }}</td>
-      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{p.id}}-{{p.nama}}">{{ p.nama }}</a></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{ p.pda.id }}-{{p.pda.nama}}">{{ p.pda.nama }}</a></td>
+      <td>{{ p.t6 or '-'}}</td>
+      <td>{{ p.m6 or '-'}}</td>
+      <td>{{ p.t12 or '-'}}</td>
+      <td>{{ p.m12 or '-'}}</td>
+      <td>{{ p.t18 or '-'}}</td>
+      <td>{{ p.m18 or '-'}}</td>
       <td></td>
       <td></td>
       <td></td>
