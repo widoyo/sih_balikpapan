@@ -11,7 +11,7 @@
         </ol>
       </nav>
 <h2>{{ pos.nama }} <span class="fs-6 badge bg-primary rounded-pill">PCH</span></h2>
-<span class="small">{{ pos.desa or ''}} {{ pos.kecamatan or ''}} {{ pos.kabupaten or ''}}</span>
+<span class="small">Desa/Kel: {{ pos.desa or '-'}} Kec: {{ pos.kecamatan or '-'}} Kab/Kot: {{ pos.kabupaten or '-'}}</span>
       <div class="btn-group float-end" role="group">
         <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>
         <a href="{{ url_for('pos.show', id=pos.id) }}" class="btn btn-primary">Sebulan</a>
