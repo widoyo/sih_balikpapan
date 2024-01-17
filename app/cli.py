@@ -599,22 +599,18 @@ def register(app):
     
     
     @app.cli.command('ps')
-    def ps(msg={}):
+    @click.argument('start')
+    @click.argument('end')
+    def ps(start, end):
         '''Memproses data dari primabot'''
-        '''
-        ids = [20540350, 20540352, 20540353, 20540354, 20540355]
-        id = ids[0]
-        rst = db.database.execute_sql("SELECT content FROM raw WHERE id IN ({})".format(ids))
-        
-        for r in rst.fetchall():
-            ps_rec(r[0])
-        '''
-        num = 10000
-        i = 0
-        for m in Raw.select(Raw.content).order_by(Raw.id.desc()).limit(num):
-            #click.echo(i)
-            i += 1
-            out = ps_rec(m.content.replace("'", "\""))
-            if out:
-                to_hourly(out)
+        _start = datetime.strptime(start, "%Y/%m/%d")
+        _end = datetime.strptime(end, "%Y/%m/%d")
+        cr = db.database.execute_sql("SELECT content \
+            FROM raw \
+                WHERE (content->>'sampling')::BIGINT BETWEEN %s AND %s", 
+                (int(_start.timestamp()), int(_end.timestamp())))
+        click.echo(_start.toordinal())
+        for row in cr:
+            click.echo(row[0]['device'])
+            Raw._to_daily(row[0])
 
