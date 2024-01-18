@@ -10,20 +10,74 @@
           <li class="breadcrumb-item active" aria-current="page">{{ logger.sn }}</li>
         </ol>
       </nav>
-      {{ logger.sn }} {{ logger.tipe }} - di {{ logger.location.nama }}
+      <h2>{{ logger.sn }} <span class="fs-6 badge bg-primary rounded-pill">{{ logger.tipe|upper }}</span></h2>
     </div>
   </div>
   <div class="container">
     <div class="row">
       <div class="col-md-8">
-
+        <h2 class="text-center fs-4"><a href="{{ url_for('logger.show', sn=logger.sn) }}?s={{prev_s.strftime('%Y/%m/%d') }}" class="me-5 btn btn-light"><i class="bi bi-chevron-left"></i></a> {{ sampling.strftime('%d %b %Y') }} <a href="{{ url_for('logger.show', sn=logger.sn)}}?s={{next_s.strftime('%Y/%m/%d') }}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
+        {% if logger.tipe == 'arr' %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Sampling</th>
+              <th>Tick</th>
+              <th>Rain</th>
+              <th>Aki</th>
+              <th>Sinyal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in periodik %}
+            <tr>
+              <td>{{ d['sampling'].strftime("%H:%M") }}</td>
+              <td>{{ d['tick'] }}</td>
+              <td>{{ d['tick'] * logger.tipp_fac }}</td>
+              <td>{{ d['battery'] }}</td>
+              <td>{{ d['signal_quality']}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% elif logger.tipe == 'awlr' %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Sampling</th>
+              <th>WLevel</th>
+              <th>Battery</th>
+              <th>Sinyal</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for d in periodik %} 
+          <tr>
+            <td>{{ d['sampling'].strftime("%H:%M") }}</td>
+            <td>{% if d['distance'] %}{{ logger.ting_son - d['distance'] * logger.son_res }}{% elif d['wl_scale']%}{{ d['wl_scale'] }}{%endif %}</td>
+            <td>{{ d['battery'] }}</td>
+            <td>{{ d['signal_quality '] }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4">
+<i>Tidak ada Data</i>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
       </div>
       <div class="col-md-4">
-        Lokasi<br>
+        Lokasi <b>{{ logger.location.nama }}</b><br>
         Config<br>
-         ARR: tipping factor<br>
+        {% if logger.tipe == 'arr' %}
+         ARR: tipping factor <b>{{ logger.tipp_fac}}</b> mm<br>
+         {% elif logger.tipe == 'awlr'%}
          AWLR: Tinggi sonar, resolusi sonar<br>
-        On Off list
+         {% endif %}
+        
         
       </div>
     </div>

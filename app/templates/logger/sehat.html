@@ -25,7 +25,7 @@
         <tbody>
         {% for logger in logger_list %}
           <tr>
-            <td style="max-width: 150px;" class="text-truncate"><i class="bi bi-cpu me-1 {% if logger.tipe == 'arr' %}text-primary{% elif logger.tipe == 'awlr' %}text-danger{% endif %}"></i> {{ logger.sn }} 
+            <td style="max-width: 150px;" class="text-truncate"><i class="bi bi-cpu me-1 {% if logger.tipe == 'arr' %}text-primary{% elif logger.tipe == 'awlr' %}text-danger{% endif %}"></i> <a href="{{ url_for('logger.show', sn=logger.sn) }}?s={{ sampling.strftime("%Y/%m/%d")}}">{{ logger.sn }}</a> 
               <br>{% if logger.location %}<i class="bi bi-geo-alt me-1"></i> <a data-bs-toggle="tooltip" data-bs-title="{{ logger.location.nama }}" title="{{ logger.location.nama }}" href="{{ url_for('pos.show', id=logger.location.id) }}" class="text-muted fw-light" style="font-size:10pt">{{ logger.location.nama }}</a>{% else %}-{% endif %}
             </td>
             {% for i in range(0, 24) %}

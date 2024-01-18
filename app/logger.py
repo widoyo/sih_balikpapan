@@ -29,9 +29,23 @@ def edit(sn):
 def show(sn):
     logger = Logger.get(Logger.sn==sn)
     sampling = request.args.get('s', '')
-    rst = Raw.select().where(Raw.sn==sn).limit(288).order_by(Raw.id.desc())
-    df = pd.DataFrame([json.loads(r.content.replace('\'', '"')) for r in rst])
-    return render_template('logger/show.html', logger=logger)
+    if sampling == '':
+        sampling = datetime.date.today()
+    else:
+        sampling = datetime.datetime.strptime(sampling, '%Y/%m/%d')
+    daily = Daily.select().where(Daily.sn==sn, Daily.sampling==sampling).first()
+    periodik = []
+    try:
+        for r in json.loads(daily.content):
+            r['sampling'] = datetime.datetime.fromtimestamp(r['sampling'])
+            periodik.append(r)
+    except:
+        pass
+    next_s = sampling + datetime.timedelta(days=1)
+    prev_s = sampling - datetime.timedelta(days=1)
+
+    return render_template('logger/show.html', logger=logger, periodik=periodik,
+                           sampling=sampling, next_s=next_s, prev_s=prev_s)
 
 @bp.route('/sehat')
 @login_required
