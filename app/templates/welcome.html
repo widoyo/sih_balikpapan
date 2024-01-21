@@ -36,6 +36,7 @@
       <div class="col-lg-6 mx-auto">
         <form method="POST" action="/login" class="p-4 p-md-5 border rounded-3 bg-light">
           {{ form.hidden_tag() }}
+          <input type="hidden" name="next" value="{{ next or '' }}">
           <div class="form-floating mb-3">
             <input type="text" name="username" class="form-control" id="floatingInput" placeholder="username">
             <label for="floatingInput">Username</label>
@@ -48,7 +49,7 @@
             <button class="w-100 btn btn-lg btn-primary" type="submit">Login</button>
           </div>
           <hr>
-          <p>&copy; 2019 - 2022 prinus</p>
+          <p>&copy; 2019 - 2024 prinus</p>
       </form>
       </div>
         

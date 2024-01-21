@@ -4,7 +4,7 @@ from logging.handlers import RotatingFileHandler, SMTPHandler
 import time
 from email.policy import HTTP
 import datetime
-import click
+from urllib.parse import urlparse, urljoin
 from flask import Flask, jsonify, render_template, redirect, url_for, request, json
 from flask import flash, send_from_directory
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
@@ -36,6 +36,25 @@ login_manager.login_view = 'login'
 
 apifairy = APIFairy()
 ma = Marshmallow()
+
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and \
+        ref_url.netloc == test_url.netloc
+        
+def get_redirect_target():
+    for target in request.values.get('next'), request.referrer:
+        if not target:
+            continue
+        if is_safe_url(target):
+            return target
+        
+def redirect_back(endpoint, **values):
+    target = request.form['next']
+    if not target or not is_safe_url(target):
+        target = url_for(endpoint, **values)
+    return redirect(target)
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -230,6 +249,7 @@ def create_app(config_class=Config):
         if current_user.is_authenticated:
             return redirect(url_for('homepage'))
         form = LoginForm()
+        next = get_redirect_target()
         if form.validate_on_submit():
             try:
                 user = User.get(User.username==form.username.data)
@@ -241,11 +261,8 @@ def create_app(config_class=Config):
                 return redirect(url_for('login'))
             login_user(user, remember=form.remember_me.data)
             
-            next_page = request.args.get('next')
-            if not next_page:
-                next_page = '/'
-            return redirect(next_page)
-        return render_template('login.html', title='Sign In', form=form)
+            return redirect_back('homepage')
+        return render_template('login.html', title='Sign In', form=form, next=next)
     
     @app.route('/logout')
     def logout():
@@ -255,6 +272,7 @@ def create_app(config_class=Config):
 
     @app.route('/', methods=['POST', 'GET'])
     def homepage():
+        next = get_redirect_target()
         if current_user.is_authenticated:
             data_upload_form = DataUploadForm()
             today = datetime.date.today()
@@ -307,18 +325,18 @@ def create_app(config_class=Config):
                 list_petugas = User.select().where(User.tenant==current_user.tenant).order_by(User.username)
                 
                 sns = [l.sn for l in current_user.tenant.logger_set]
-                chs = Hourly.select().where(
-                    (Hourly.sn.in_(sns)) &
-                    (Hourly.sampling.year==today.year) &
-                    (Hourly.sampling.month==today.month) &
-                    (Hourly.sampling.day==today.day) &
-                    (Hourly.rain > 0))
-                tmas = Hourly.select().where(
-                    (Hourly.sn.in_(sns)) &
-                    (Hourly.sampling.year==today.year) &
-                    (Hourly.sampling.month==today.month) &
-                    (Hourly.sampling.day==today.day) &
-                    (Hourly.distance != None))
+                chs = [d for d in Daily.select().where(
+                    (Daily.sn.in_(sns)) &
+                    (Daily.sampling.year==today.year) &
+                    (Daily.sampling.month==today.month) &
+                    (Daily.sampling.day==today.day)) if d.rain()[0] > 0]
+                    
+                tmas = [d for d in Daily.select().where(
+                    (Daily.sn.in_(sns)) &
+                    (Daily.sampling.year==today.year) &
+                    (Daily.sampling.month==today.month) &
+                    (Daily.sampling.day==today.day)) if d.wlevels() != []]
+                    
                     
                 #sql = f"SELECT id,content->>'tick', content->>'distance' AS distance, content->>'sampling' FROM raw WHERE sn IN ({','.join('?' for _ in sns)}) AND distance IS NOT NULL LIMIT 3000"
                 #rst = db.database.execute_sql(sql, sns)
@@ -332,7 +350,7 @@ def create_app(config_class=Config):
                                        curahhujan=chs,
                                        tmas=tmas)
         else:
-            return render_template('welcome.html', form=LoginForm())
+            return render_template('welcome.html', form=LoginForm(), next=next)
     
     return app
 
@@ -342,8 +360,8 @@ def initialize_extensions(app):
     login_manager.init_app(app)
     db.init_app(app)
     #debug_toolbar.init_app(app)
-    apifairy.init_app(app)
-    ma.init_app(app)
+    #apifairy.init_app(app)
+    #ma.init_app(app)
 
 
 def register_blueprints(app):
