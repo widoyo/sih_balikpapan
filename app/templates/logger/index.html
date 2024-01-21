@@ -18,6 +18,7 @@
 <thead>
   <tr>
     <th>SN</th>
+    <th>Pos</th>
     <th>Firmware</th>
     <th>Perolehan</th>
     <th>Konfigurasi</th>
@@ -27,7 +28,7 @@
   {% for l in loggers %}
   <tr>
     <td style="max-width: 150px;" class="text-truncate"><i class="bi bi-cpu me-1 {% if l.tipe == 'arr' %}text-primary{% elif l.tipe == 'awlr' %}text-danger{% endif %}"></i> <a href="{{ l.sn }}">{{ l.sn }}</a> 
-      <br><i class="bi bi-geo-alt me-1"></i> 
+      </td><td><i class="bi bi-geo-alt me-1"></i> 
       <abbr class="editable text-muted fw-light" style="font-size:10pt"
         data-type="select" data-source='[{% for loc in current_user.tenant.location_set %}{"value": {{ loc.id }}, "text": "{{ loc.nama }}"},{% endfor %}{"value": 0, "text": "Tidak Dipasang"}]' data-pk="{{l.id}}" data-obj="logger" data-name="location_id" data-value="{{l.location.id}}" data-title="Lokasi Logger">{% if l.location %}{{ l.location.nama }}{% else %}-{% endif %}</abbr>
     </td>
