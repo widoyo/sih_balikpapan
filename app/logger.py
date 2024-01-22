@@ -50,13 +50,13 @@ def show(sn):
 @bp.route('/sehat')
 @login_required
 def sehat():
-    logger_list = Logger.select().where(Logger.tenant==current_user.tenant)
+    logger_list = Logger.select().where(Logger.tenant==current_user.tenant).order_by(Logger.sn.asc())
     sampling = request.args.get('s', '')
     if sampling == '':
         sampling = datetime.date.today()
     else:
         sampling = datetime.datetime.strptime(sampling, '%Y-%m-%d')
-    ds = dict([(d.sn, d.sehat()) for d in Daily.select().where(Daily.sn.in_([l.sn for l in logger_list]), Daily.sampling==sampling)])
+    ds = dict([(d.sn, d.sehat()) for d in Daily.select().where(Daily.sn.in_([l.sn for l in logger_list]), Daily.sampling==sampling).order_by(Daily.sn.asc())])
     logger_sehat_list = []
     
     for ll in logger_list:
@@ -73,5 +73,5 @@ def sehat():
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    logger = Logger.select().where(Logger.tenant==current_user.tenant)
+    logger = Logger.select().where(Logger.tenant==current_user.tenant).order_by(Logger.sn.asc())
     return render_template('logger/index.html', loggers=logger)

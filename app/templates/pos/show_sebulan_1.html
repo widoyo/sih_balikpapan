@@ -39,17 +39,39 @@
       </table>
     </div>
     <div class="col-sm-4">
-      <h4>Curah Hujan Sebulan</h4>
-      <p>Telemetri: {{ "%0.1f" % data_sebulan|sum(attribute='1')}} mm</p>
-      <p>Manual: {{ data_sebulan|sum(attribute='3') }} mm</p>
-      <div class="alert alert-success" role="alert">
-        <i>Data manual dapat diisi pada menu <a href="/pos/pch" class="alert-link">Pos Hidrologi | Curah Hujan</a>, pada kolom <b>Manual</b> (paling kanan)</i>
-      </div>
+      <h4>Curah Hujan {{bln.strftime('%b %Y')}}</h4>
       <table class="table">
+        <tr>
+          <th>&nbsp;</th>
+          <th>CH<br><span style="line-height:0.8em;font-size:8pt;font-weight:300">(mm)</span></th>
+          <th>HTH</th>
+          <th>Maks<br><span style="font-size:8pt;font-weight:300">(mm)</span></th>
+        </tr>
+        <tr style="background-color: #0dcaf0;">
+          <th>Telemetri (100%)</th>
+          <td class="text-end">{{ "%0.1f" % data_sebulan|sum(attribute='1')}}</td>
+          <td class="text-end">0</td>
+          <td class="text-end">0</td>
+        </tr>
+        <tr style="background-color: #d1e7dd;">
+          <th>Manual</th>
+          <td class="text-end">{{ data_sebulan|sum(attribute='3') }}</td>
+          <td class="text-end">0</td>
+          <td class="text-end">0</td>
+        </tr>
+        <tr>
+          <th>Selisih</th>
+          <td class="text-end">0</td>
+          <td class="text-end">0</td>
+          <td class="text-end">0</td>
+        </tr>
+      </table>
+      <table class="table table-striped" id="daily">
         <thead>
           <tr>
             <th>Tgl</th>
             <th>Telemetri</th>
+            <th>Num</th>
             <th>Manual</th>
             <th>Selisih</th>
           </tr>
@@ -58,8 +80,11 @@
           {% for t in data_sebulan %}
           <tr>
             <td>{{ t.0 }}</td>
-            <td class="text-end">{% if t.1 %}{{ "%0.1f" % t.1 }}{% else %}-{% endif %}</td>
-            <td class="text-end">{{ t.3 or '-'}}</td>
+            <td class="text-end t-rain" style="background-color: #0dcaf0;">{% if t.1 %}{{ "%0.1f" % t.1 }}{% else %}-{% endif %}</td>
+            <td>{{ t.2 }}</td>
+            <td class="text-end m-rain" style="background-color: #d1e7dd;">
+              {% if t.4 %}<abbr class="editable" data-pk="{{ t.4 }}" data-obj="daily" data-name="m_rain" data-title="CH Manual {{ t.0 }}">{{ t.3 or '-'}}</abbr>{% else %}-{% endif %}
+            </td>
             <td class="text-end"></td>
           </tr>
           {% endfor %}
@@ -69,11 +94,34 @@
   </div>
 </div>
 {% endblock %}
+
 {% block js_foot %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1/dist/chartjs-plugin-annotation.min.js"></script>
-
+<script src="/static/js/dark-editable.js"></script>
 <script>
+  updateDaily();
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+  const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+
+  const editable = document.querySelectorAll('.editable')
+  let i = 0;
+  for (i=0; i < editable.length; i++) {
+    new DarkEditable(editable[i], {
+      url: '/api/update',
+      success: (resp, newVal) => {
+        if (resp.status == 'error') {
+          return resp.msg
+        }
+      }
+    })
+  }
+
+  function updateDaily() {
+    let daily = document.getElementById('daily');
+    let hthTelemetri = Array.from(daily.rows).slice()
+  }
+
   const labels = [{% for t in data_sebulan %}'{{ t[0].day }}', {% endfor %}
   ];
 
@@ -87,7 +135,7 @@
     },
     {
       label: 'CH Manual / Hari',
-      backgroundColor: 'rgb(0,191,255)',
+      backgroundColor: 'rgba(15,81,50, 0.5)',
       borderColor: 'rgb(255, 99, 132)',
       data: [{% for r in data_sebulan %}{{ r.3 }}, {% endfor %}],
     },

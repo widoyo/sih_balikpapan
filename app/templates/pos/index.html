@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container">
   <div class="row">
-    <div class="col mb-5">
+    <div class="col mb-3">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/">Home</a></li>
@@ -16,18 +16,18 @@
   <div class="row">
     <div class="col-sm-8">
       
-      <table class="table border-top">
+      <table class="table table-striped">
         <thead>
           <tr>
-            <th>No</th>
-            <th>Nama
+            <th class="align-baseline">No</th>
+            <th class="align-baseline">Nama
               <div class="fw-lighter" style="font-size:8pt;">WS, DAS</div>
             </th>
-            <th></th>
+            <th class="align-baseline">Tipe</th>
             <th>Administratif
               <div class="fw-lighter" style="font-size:8pt;">Kab/Kota, Desa/Kel, Kecamatan</div>
             </th>
-            <th>Geografis
+            <th class="align-baseline">Geografis
               <div class="fw-lighter" style="font-size:8pt;">Elevasi, Latitude (Lintang), Longitude (Bujur)</div>
             </th>
           </tr>
@@ -40,7 +40,7 @@
               
               <abbr class="editable" data-type="text" data-obj="location" data-name="nama" data-pk="{{ p.id }}" data-title="Nama Pos">{{ p.nama }}</abbr>
             </td>
-            <td><abbr class="editable badge {% if p.tipe == '1' %}bg-primary{% elif p.tipe == '2' %}bg-danger{% elif p.tipe == '3' %}bg-success{% else %}bg-secondary{% endif %}" data-type="select" data-source='[{"value": 1, "text": "PCH"}, {"value": 2, "text": "PDA"}, {"value": 3, "text": "Klimatologi"}]' data-obj="location" data-name="tipe" data-pk="{{ p.id }}" data-title="Tipe Pos Pengamatan">{{ p.tipe }}</abbr>
+            <td><abbr class="editable badge {% if p.tipe == '1' %}bg-primary{% elif p.tipe == '2' %}bg-danger{% elif p.tipe == '3' %}bg-success{% else %}bg-secondary{% endif %}" data-type="select" data-source='[{"value": 1, "text": "PCH"}, {"value": 2, "text": "PDA"}, {"value": 3, "text": "Klimatologi"}]' data-obj="location" data-name="tipe" data-pk="{{ p.id }}" data-title="Tipe Pos Hidrologi">{{ p.tipe }}</abbr>
             </td>
             <td><div>Kab/Kota <abbr class="editable" data-type='text' data-pk='{{p.id}}' data-obj='location' data-title='Kabupaten/Kota' data-name='kabupaten'>{{ p.kabupaten}}</abbr>, ds/kel <abbr class="editable" data-obj='location' data-name='Desa/Kel' data-type='text' data-pk='{{p.id}}' data-title='Desa' data-value='{{ p.desa }}'>{{ p.nama }}</abbr>, kec. <abbr class="editable" data-type='text' data-pk='{{p.id}}' data-obj='location' data-title='Kecamatan' data-name='kecamatan'>{{ p.kecamatan }}</abbr></div></td>
             <td>Elev. <abbr class="editable" title="Elevasi (mdpl)" data-obj="location" data-pk="{{ p.id }}" data-type="number" data-name="elevasi">{{ p.elevasi }}</abbr> <abbr class="editable" data-obj='location' data-name='ll' data-type='text' data-pk='{{ p.id }}'>{{ p.ll or 'latlng'}}</abbr>

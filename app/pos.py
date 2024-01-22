@@ -29,12 +29,12 @@ def pch():
     tgl = datetime(int(tahun), int(bulan), int(tanggal))
     start = tgl.replace(hour=7)
     end = (tgl + timedelta(days=1)).replace(hour=6)
-    pch = Location.select().where(Location.tipe=='1', Location.tenant==current_user.tenant)
+    pch = Location.select().where(Location.tipe=='1', Location.tenant==current_user.tenant).order_by(Location.nama.asc())
     hch = dict([(p.id, {'pch': p, 'pagi': None, 'siang': None, 'malam': None, 
             'dini': None, 'telemetri': None, 'manual': None}) for p in pch])
     
     #sql = "SELECT * from hourly WHERE location_id IN () AND sampling BETWEEN AND GROUP BY location_id"
-    hourly_ch = dict([(d.location_id, d) for d in Daily.select().where((Daily.location.in_(pch)) & (Daily.sampling==tgl.date())).order_by(Daily.location, Daily.sampling)])
+    hourly_ch = dict([(d.location_id, d) for d in Daily.select().where((Daily.location.in_(pch)) & (Daily.sampling==tgl.date()))])
     for k, v in hourly_ch.items():
         try: 
             logger = Logger.get(sn=k)
@@ -43,11 +43,11 @@ def pch():
             tf = 0.2
         hch[k]['telemetri'] = "%0.1f" % v.rain()[0]
         hch[k]['manual'] = v.m_rain
-        pagi = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 6 and h.hour < 13]) * tf
-        siang = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 13 and h.hour < 19]) * tf
-        malam = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 19 and h.hour <= 23]) * tf
-        malam += sum([r[0] for h, r in v.hourly_rain().items() if h.hour >= 0 and h.hour <= 1]) * tf
-        dini = sum([r[0] for h, r in v.hourly_rain().items() if h.hour > 1 and h.hour < 7]) * tf
+        pagi = sum([r[0] for h, r in v.hourly_rain().items() if h.hour >= 7 and h.hour < 13]) * tf
+        siang = sum([r[0] for h, r in v.hourly_rain().items() if h.hour >= 13 and h.hour < 19]) * tf
+        malam = sum([r[0] for h, r in v.hourly_rain().items() if h.hour >= 19 and h.hour <= 23]) * tf
+        malam += sum([r[0] for h, r in v.hourly_rain().items() if h.hour >= 0 and h.hour < 1]) * tf
+        dini = sum([r[0] for h, r in v.hourly_rain().items() if h.hour >= 1 and h.hour < 7]) * tf
         hch[k]['pagi'] = pagi and "%0.1f" % pagi or '-'
         hch[k]['siang'] = siang and "%0.1f" % siang or '-'
         hch[k]['malam'] = malam and "%0.1f" % malam or '-'
@@ -71,7 +71,7 @@ def pda():
     except:
         tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
     tgl = datetime(int(tahun), int(bulan), int(tanggal))
-    pdas = Location.select().where(Location.tipe=='2', Location.tenant==current_user.tenant)
+    pdas = Location.select().where(Location.tipe=='2', Location.tenant==current_user.tenant).order_by(Location.nama.asc())
     sns = [l.sn for l in current_user.tenant.logger_set]
     wl_pdas = dict([(l.id, 
                 {'pda': l, 't6': None, 'm6': None, 't12': None, 'm12': None, 't18': None, 'm18': None}) 
@@ -122,14 +122,17 @@ def show_sebulan(id, tahun, bulan):
     bulan = datetime(tahun, bulan, 1)
     sbl = bulan - timedelta(days=1)
     ssd = bulan + timedelta(days=32)
-    end_bl = (ssd.replace(day=1) - timedelta(days=1)).day
+    if bulan.strftime("%Y%m") == datetime.today().strftime("%Y%m"):
+        end_bl = datetime.today().day
+    else:
+        end_bl = (ssd.replace(day=1) - timedelta(days=1)).day
     id = int(id.split('-')[0])
     pos = get_object_or_404(Location, (Location.id == id))
-    data_sebulan = dict([((bulan + timedelta(days=i)).date(), (0, 0, 0)) for i in range(0, end_bl)])
-    data_sebulan.update(dict([(d.sampling, (d.rain()[0], d.rain()[1], d.m_rain)) for d in Daily.select().where(
+    data_sebulan = dict([((bulan + timedelta(days=i)).date(), (0, 0, 0, 0)) for i in range(0, end_bl)])
+    data_sebulan.update(dict([(d.sampling, (d.rain()[0], d.rain()[1], d.m_rain, d)) for d in Daily.select().where(
         Daily.location_id==id, Daily.sampling.year==bulan.year, 
         Daily.sampling.month==bulan.month)]))
-    out = [(k, v[0], v[1], v[2]) for k, v in data_sebulan.items()]
+    out = [(k, v[0], v[1], v[2], v[3]) for k, v in data_sebulan.items()]
     
     if pos.tipe not in ('1', '2', '3'):
         return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
