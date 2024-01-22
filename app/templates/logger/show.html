@@ -37,7 +37,19 @@
               <td>{{ d['battery'] }}</td>
               <td>{{ d['signal_quality']}}</td>
             </tr>
-            {% endfor %}
+            {% else %}
+            <tr>
+              <td colspan="5">
+                <div class="px-4 py-5 my-5 text-center">
+                  <i class="display-4 bi bi-cup text-muted"></i>
+                  <h1 class="display-6 text-muted text-body-emphasis">Tidak ada data</h1>
+                  <div class="col-lg-6 mx-auto">
+                    <p class="lead mt-4">Nyalakan primaBot <mark class="fw-bold">{{ logger.sn }}</mark> <b>sekarang</b> <br>dan tunggu 5 menit.</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+              {% endfor %}
           </tbody>
         </table>
         {% elif logger.tipe == 'awlr' %}
@@ -61,8 +73,14 @@
           {% else %}
           <tr>
             <td colspan="4">
-<i>Tidak ada Data</i>
-            </td>
+              <div class="px-4 py-5 my-5 text-center">
+                <i class="display-4 bi bi-cup text-muted"></i>
+                <h1 class="display-6 text-muted text-body-emphasis">Tidak ada data</h1>
+                <div class="col-lg-6 mx-auto">
+                  <p class="lead mt-4">Nyalakan primaBot <mark class="fw-bold">{{ logger.sn }}</mark> <b>sekarang</b> <br>dan tunggu 5 menit.</p>
+                </div>
+              </div>
+          </td>
           </tr>
           {% endfor %}
           </tbody>
@@ -70,7 +88,10 @@
         {% endif %}
       </div>
       <div class="col-md-4">
-        Lokasi <b>{{ logger.location.nama }}</b><br>
+        Lokasi 
+        <i class="bi bi-geo-alt me-1"></i> 
+      <abbr class="editable"
+        data-type="select" data-source='[{% for loc in current_user.tenant.location_set %}{"value": {{ loc.id }}, "text": "{{ loc.nama }}"},{% endfor %}{"value": 0, "text": "Tidak Dipasang"}]' data-pk="{{logger.id}}" data-obj="logger" data-name="location_id" data-value="{{logger.location.id}}" data-title="Lokasi Logger">{% if logger.location %}Ganti{% else %}Pasang di...{% endif %}</abbr><br>
         Config<br>
         {% if logger.tipe == 'arr' %}
          ARR: tipping factor <b>{{ logger.tipp_fac}}</b> mm<br>
@@ -84,3 +105,24 @@
   </div>
 </div>
 {% endblock %}
+{% block js_foot %}
+<script src="/static/js/dark-editable.js"></script>
+<script>
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+  const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+
+  const editable = document.querySelectorAll('.editable')
+  let i = 0;
+  for (i=0; i < editable.length; i++) {
+    new DarkEditable(editable[i], {
+      url: '/api/update',
+      emptytext: 'Tidak terpasang',
+      success: (resp, newVal) => {
+        if (resp.status == 'error') {
+          return resp.msg
+        }
+      }
+    })
+  }
+</script>
+  {% endblock %}

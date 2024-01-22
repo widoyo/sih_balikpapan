@@ -15,16 +15,16 @@
   </div>
   <div class="row mb-4">
     <div class="col-sm-8">
+      <div class="row my-4">
+        <div class="col-4 text-end"><a class="btn btn-light" href="{{ url_for('pos.pch') }}?s={{ _tgl.strftime('%Y/%m/%d') }}"><i class="bi bi-chevron-left"></i></a></div>
+        <div class="col-4 text-center fs-4">{{ tgl.strftime('%d %b %y') }}</div>
+        <div class="col-4 text-start"><a class="btn btn-light" href="{{ url_for('pos.pch') }}?s={{ tgl_.strftime('%Y/%m/%d') }}"><i class="bi bi-chevron-right"></i></a></div>  
+    </div>
     </div>
     <div class="col-sm-4">
   </div>
   <div class="row">
     <div class="col-sm-8">
-      <div class="row mb-4">
-        <div class="col-4 text-end"><a class="btn btn-light" href="{{ url_for('pos.pch') }}?s={{ _tgl.strftime('%Y/%m/%d') }}"><i class="bi bi-chevron-left"></i></a></div>
-        <div class="col-4 text-center fs-4">{{ tgl.strftime('%d %b %y') }}</div>
-        <div class="col-4 text-start"><a class="btn btn-light" href="{{ url_for('pos.pch') }}?s={{ tgl_.strftime('%Y/%m/%d') }}"><i class="bi bi-chevron-right"></i></a></div>  
-    </div>
 <table class="table border-top table-striped">
   <thead>
     <tr>
@@ -34,8 +34,9 @@
       <th class="text-center small">Siang-Sore <div style="font-weight: 300;font-size: 8pt;">13:01 - 19:00</div></th>
       <th class="text-center small">Malam <div style="font-weight: 300;font-size: 8pt;">19:01 - 01:00</div></th>
       <th class="text-center small">Dini Hari <div style="font-weight: 300;font-size: 8pt;">01:01 - 07:00</div></th>
-      <th class="align-baseline">Telemetri</th>
-      <th class="align-baseline">Manual<div style="font-weight: 300;font-size: 8pt;">oleh Pengamat Pos</div></th>
+      <th class="align-baseline" style="background-color: #0dcaf0;">Telemetri</th>
+      <th class="align-baseline" style="background-color: #d1e7dd;">Manual <i class="bi bi-info-circle-fill" data-bs-title="Hasil Ukur Manual" data-bs-toggle="popover" 
+        data-bs-content="Dapat diisi/edit jika primabot aktif mengirim data."></i><div style="font-weight: 300;font-size: 8pt;">Data dari pengamat</div></th>
     </tr>
   </thead>
   <tbody>
@@ -43,23 +44,41 @@
     <tr>
       <td>{{ loop.index }}</td>
       <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{p['pch'].id}}-{{p['pch'].nama}}/{{ tgl.strftime('%Y/%m')}}">{{ p['pch'].nama }}</a></td>
+      {% if not p['pch'].logger_set|length %}
+      <td colspan="5">Tidak ada primaBot di PCH ini, <a href="/logger">pasangkan</a>.</td>
+      {% else %}
       <td class="text-end">{{ p.pagi or '-'}}</td>
       <td class="text-end">{{ p.siang or '-' }}</td>
       <td class="text-end">{{ p.malam or '-' }}</td>
       <td class="text-end">{{ p.dini or '-' }}</td>
-      <td class="text-end rain-val">{{ p.telemetri or '-' }}</td>
-      <td class="text-end rain-val"><span><abbr class="editable" 
+      <td class="text-end rain-val" style="background-color: #0dcaf0;">{{ p.telemetri or '-' }}</td>
+      {% endif %}
+      <td class="text-end rain-val" style="background-color: #d1e7dd;">{% if p.id %}<abbr class="editable" 
         data-title="Curah Hujan {{ tgl.strftime('%d %b %y') }}" data-type="text" data-step="0.1" 
         data-obj="daily" data-name="m_rain" 
         data-pk="{{ p.id }}">
-        {{ p.manual or '-' }}</abbr></span></td>
+        {{ p.manual or '-' }}</abbr>{% else %}-{% endif %}</td>
       
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="8">
+        <div class="px-4 py-5 my-5 text-center">
+          <h1 class="display-6 fw-bold text-body-emphasis">Belum ada Pos Curah Hujan</h1>
+          <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4"><a href="/pos/add?tipe=1">Tambahkan Pos Curah Hujan (PCH)</a>.</p>
+          </div>
+        </div>
+      </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
     </div>
     <div class="col-sm-4">
+      <div class="alert alert-info" role="alert">
+        Data Telemetri berasal dari primaBot
+      </div>
       <p>Skala Curah Hujan per hari (24 jam)</p>
       <table>
         <tr>
