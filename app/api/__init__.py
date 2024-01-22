@@ -15,8 +15,8 @@ def update():
     oid = data.get('pk')
     val = data.get('value')
     
-    if field == 'location_id':
-        if val == "0":
+    if field == 'location_id' and table == 'logger':
+        if val == '0':
             sql = "UPDATE {table} set {nama}=NULL WHERE id={oid}".format(table=table, 
                                                                     nama=field, 
                                                                     oid=oid)
@@ -41,7 +41,8 @@ def update():
                                                                     nilai=val, 
                                                                     oid=oid)
         
-    db.database.execute_sql(sql)    
+    db.database.execute_sql(sql)
+    db.database.execute_sql("UPDATE logger set location_id=NULL WHERE location_id=0")  
     return sql, 200
 
 '''
