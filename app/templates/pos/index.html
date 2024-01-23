@@ -46,6 +46,17 @@
             <td>Elev. <abbr class="editable" title="Elevasi (mdpl)" data-obj="location" data-pk="{{ p.id }}" data-type="number" data-name="elevasi">{{ p.elevasi }}</abbr> <abbr class="editable" data-obj='location' data-name='ll' data-type='text' data-pk='{{ p.id }}'>{{ p.ll or 'latlng'}}</abbr>
             </td>
           </tr>
+          {% else %}
+          <tr>
+            <td colspan="5">
+              <i class="bi bi-plus-square-dotted"></i>
+              <h1 class="display-6 fw-bold text-body-emphasis">Belum ada Pos</h1>
+              <div class="col-lg-6 mx-auto">
+                <p class="lead mb-4"><a href="/pos/add?tipe=1">Tambahkan Pos Curah Hujan (PCH)</a>.</p>
+              </div>
+                
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>

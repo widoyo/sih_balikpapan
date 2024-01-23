@@ -50,6 +50,12 @@ class Raw(db.Model):
             tz = ZoneInfo(logger.tenant.timezone)
         out['sampling'] = out['sampling'].astimezone(tz)
 
+        logger.latest_sampling = out['sampling']
+        logger.latest_battery = msg['battery']
+        logger.latest_up = datetime.datetime.fromtimestamp(msg['up_since']).astimezone(tz)
+        logger.save()
+        print(logger.sn)
+        
         location = None        
         if logger.location:
             location = logger.location
@@ -152,6 +158,9 @@ class Location(db.Model):
     def get_sehari(self, day=datetime.date.today):
         print(day)
         
+    class Meta:
+        order_by = ['nama']
+        
     
 class Logger(db.Model):
     sn = pw.CharField(max_length=10)
@@ -174,6 +183,9 @@ class Logger(db.Model):
     latest_sampling = pw.DateTimeField(null=True)
     latest_up = pw.DateTimeField(null=True)
     latest_battery = pw.FloatField(null=True)
+    sim  = pw.CharField(max_length=20, null=True)
+    generasi = pw.IntegerField(default=3)
+    sensors = pw.TextField(null=True) # catatan sensor yang terpasang
     
     class Meta:
         order_by = ['id']
@@ -306,10 +318,21 @@ class Daily(db.Model):
         t.update(dict([(datetime.datetime.fromtimestamp(o[0]['sampling']).hour, len(o)) for o in newlist if len(o)]))
         return t
     
+    def battery(self):
+        '''return list(jam, battery, sinyal)'''
+        ret = []
+        t = dict([(i,0) for i in range(0, 24)])
+        jam = 0
+        for c in json.loads(self.content):
+            sampling = datetime.datetime.fromtimestamp(c['sampling'])
+            if sampling.hour != jam:
+                pass
+        return ret
+    
     def wlevels(self):
         '''return pagi, siang sore'''
         if 'distance' not in self.content:
-            return {}
+            return []
         
         resolusi = 1
         tinggi_sonar = 10000
