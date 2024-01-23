@@ -33,7 +33,7 @@
     <td style="max-width: 150px;" class="text-truncate"><i class="bi bi-cpu me-1 {% if l.tipe == 'arr' %}text-primary{% elif l.tipe == 'awlr' %}text-danger{% endif %}"></i> <a href="{{ l.sn }}">{{ l.sn }}</a> 
       </td>
       <td>
-      <i class="bi bi-1-circle"></i>
+      <i class="bi bi-{{ l.generasi or 1}}-circle{% if l.generasi in (None, 1,2) %} text-muted{%else%} text-success{% endif %}"></i>
     </td>
     <td {% if not l.location %}class="text-danger"{% endif %}><i class="bi bi-geo-alt me-1"></i> 
       <abbr class="editable"
@@ -76,8 +76,9 @@
     </div>
     <div class="col-sm-3">
 <h4>primaBot</h4>
-<p>Generasi <i class="bi bi-1-circle"></i>, Tanpa LCD, sensor Aki tidak akurat</p>
-<p>Generasi <i class="bi bi-2-circle"></i>, Dengan LCD, WiFi, Modem Ekternal</p>
+<p>Gen <i class="bi bi-1-circle text-muted"></i>, Tanpa LCD, <span class="text-danger">sensor Aki tidak akurat</span>, <b>tidak diproduksi</b> </p>
+<p>Gen <i class="bi bi-2-circle text-muted"></i>, Dengan LCD, WiFi, Modem Ekternal, <b>tidak diproduksi</b></p>
+<p>Gen <i class="bi bi-3-circle text-success"></i>, Dengan LCD, Modem Internal</p>
     </div>
   </div>
 </div>
