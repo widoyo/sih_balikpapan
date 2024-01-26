@@ -39,7 +39,7 @@
       </table>
     </div>
     <div class="col-sm-4">
-      <h4>Curah Hujan {{bln.strftime('%b %Y')}}</h4>
+      <h4>Curah Hujan {{bln.strftime('%b %Y')}} <span class="fw-light fs-5">({{ data_sebulan|length }} hari)</span></h4>
       <table class="table">
         <tr>
           <th>&nbsp;</th>
@@ -71,7 +71,7 @@
           <tr>
             <th>Tgl</th>
             <th>Telemetri</th>
-            <th>Num</th>
+            <th>Validitas</th>
             <th>Manual</th>
             <th>Selisih</th>
           </tr>
@@ -79,9 +79,9 @@
         <tbody>
           {% for t in data_sebulan %}
           <tr>
-            <td>{{ t.0 }}</td>
+            <td><a class="small" href="/pos/{{ pos.id}}-{{ pos.nama}}?s={{ t.0.strftime('%Y-%m-%d')}}">{{ t.0 }}</a></td>
             <td class="text-end t-rain" style="background-color: #0dcaf0;">{% if t.1 %}{{ "%0.1f" % t.1 }}{% else %}-{% endif %}</td>
-            <td>{{ t.2 }}</td>
+            <td class="text-end">{% if t.2 %}{{ '%0.0f'%((t.2/288) * 100) }}%{% else %}-{% endif %}</td>
             <td class="text-end m-rain" style="background-color: #d1e7dd;">
               {% if t.4 %}<abbr class="editable" data-pk="{{ t.4 }}" data-obj="daily" data-name="m_rain" data-title="CH Manual {{ t.0 }}">{{ t.3 or '-'}}</abbr>{% else %}-{% endif %}
             </td>

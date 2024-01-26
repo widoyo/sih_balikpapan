@@ -81,12 +81,12 @@ def pda():
         for row in harian.wlevels():
             if len(row[1]):
                 if row[0] == 6:
-                    wl_pdas[harian.location_id].update({'t6': row[1][-1][1]})
+                    wl_pdas[harian.location_id].update({'t6': '%0.2f' % row[1][-1][1]})
                 if row[0] == 12:
-                    wl_pdas[harian.location_id].update({'t12': row[1][-1][1]})
+                    wl_pdas[harian.location_id].update({'t12': '%0.2f' % row[1][-1][1]})
                 if row[0] == 18:
-                    wl_pdas[harian.location_id].update({'t18': row[1][-1][1]})
-                
+                    wl_pdas[harian.location_id].update({'t18': '%0.2f' % row[1][-1][1]})
+
         wl_pdas[harian.location_id].update({'m6': harian.m_wlevel_pa})
         wl_pdas[harian.location_id].update({'m12': harian.m_wlevel_si})
         wl_pdas[harian.location_id].update({'m18': harian.m_wlevel_so})

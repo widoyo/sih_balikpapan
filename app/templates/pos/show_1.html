@@ -30,9 +30,10 @@
     </div>
     <div class="col-sm-4">
       {{ booth.open(tgl.strftime('%d %b %Y'))}}
-      <p>Banyak Data: {{ '%0.1f' % (num_data/288 * 100)|float }} %</p>
+      <p class="lh-2">Validitas Telemetri: {{ '%0.1f' % (num_data/288 * 100)|float }} %</p>
       <p>Curah Hujan Telemetri: {{ '%0.1f' % rain }} mm</p>
-      <p>Curah Hujan Manual: {{ '%0.1f' % m_rain }} mm</p>
+      <p>Curah Hujan Manual: {{ '%0.1f' % m_rain }} mm<br>
+      <small class="text-muted ms-3">Pembacaan tgl {{ tgl_.strftime('%d %b %Y')}}</small></p>
       {{ booth.close() }}
       {{ booth.open('Curah Hujan per Jam') }}
       <table>
@@ -49,7 +50,7 @@
           <td>0,1 - 5</td><th style="color: rgb(32, 255, 32)">Hujan Ringan</th>
         </tr>
       </table>
-      <i class="fw-lighter">Mengacu ke BMKG</i>
+      <small class="ms-3 text-muted">Mengacu ke BMKG</small>
       {{ booth.close() }}
       {% if pos.logger_set %}
       {{ booth.open('Data Logger ' ~ pos.logger_set[0].sn)|e}}

@@ -342,7 +342,7 @@ class Daily(db.Model):
             tinggi_sonar = logger.ting_son
         except:
             pass
-        data = [[(datetime.datetime.fromtimestamp(d['sampling']), (tinggi_sonar - d['distance'] * resolusi)) for d in json.loads(self.content) if datetime.datetime.fromtimestamp(d['sampling']).hour ==h] for h in range(0, 24)]
+        data = [[(datetime.datetime.fromtimestamp(d['sampling']), (tinggi_sonar - d['distance'] * resolusi)/100) for d in json.loads(self.content) if datetime.datetime.fromtimestamp(d['sampling']).hour ==h] for h in range(0, 24)]
         ret = []
         for i in range(len(data)):
             if data[i]:
