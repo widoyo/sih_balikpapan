@@ -18,6 +18,7 @@ def before_request():
         current_user.save()
 
 @bp.route('/pch/')
+@login_required
 def pch():
     '''Tampilkan tentang curah hujan'''
     sampling = request.args.get('s')
@@ -63,6 +64,7 @@ def pch():
         hourly_ch=hourly_ch)
 
 @bp.route('/pda/')
+@login_required
 def pda():
     '''Tampilkan tentang Duga Air'''
     sampling = request.args.get('s')

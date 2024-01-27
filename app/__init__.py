@@ -21,8 +21,6 @@ from app.forms import ManualChForm, ManualTmaForm, UserForm, DataUploadForm, Dat
 from app.models import Location, Hourly, Offline, Ws, Das
 from app import errors
 import pandas as pd
-from apifairy import APIFairy
-from flask_marshmallow import Marshmallow
 
 from config import Config
 
@@ -34,8 +32,6 @@ token_auth = HTTPTokenAuth()
 login_manager = LoginManager()    
 login_manager.login_view = 'login'
 
-apifairy = APIFairy()
-ma = Marshmallow()
 
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)

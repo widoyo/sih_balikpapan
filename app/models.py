@@ -45,12 +45,13 @@ class Raw(db.Model):
             return
 
         out = {'sampling': datetime.datetime.fromtimestamp(msg['sampling']) }
+        logger.latest_sampling = out['sampling']
+
         tz = ZoneInfo('Asia/Jakarta')
         if logger.tenant.timezone:
             tz = ZoneInfo(logger.tenant.timezone)
         out['sampling'] = out['sampling'].astimezone(tz)
 
-        logger.latest_sampling = out['sampling']
         logger.latest_battery = msg['battery']
         logger.latest_up = datetime.datetime.fromtimestamp(msg['up_since']).astimezone(tz)
         logger.save()
@@ -369,7 +370,8 @@ class Daily(db.Model):
         rain, num = (0, 0)
         if self.hourly_rain():
             logger = Logger.get(sn=self.sn)
-            rain = sum([v[0] for k, v in self.hourly_rain().items()]) * logger.tipp_fac
+            tf = logger.tipp_fac or 0.5
+            rain = sum([v[0] for k, v in self.hourly_rain().items()]) * tf
             num = sum([v[1] for k, v in self.hourly_rain().items()])
         return rain, num
         
