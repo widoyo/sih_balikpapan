@@ -1,8 +1,9 @@
 import datetime
-from flask import json
+import json
+from flask import abort
 from flask import Blueprint, request, render_template
 from flask_login import current_user, login_required
-import pandas as pd
+from peewee import DoesNotExist
 
 from .models import Logger, Location, Raw, Daily
 from .forms import LoggerForm
@@ -27,7 +28,13 @@ def edit(sn):
 @bp.route('/<sn>')
 @login_required
 def show(sn):
-    logger = Logger.get(Logger.sn==sn)
+    try:
+        logger = Logger.get(Logger.sn==sn)
+        if logger.tenant != current_user.tenant:
+            return abort(404)
+    except DoesNotExist:
+        return abort(404)
+    
     sampling = request.args.get('s', '')
     if sampling == '':
         sampling = datetime.date.today()

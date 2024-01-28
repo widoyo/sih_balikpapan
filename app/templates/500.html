@@ -1,6 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>500 error tak diharapkan</h1>
-<p>Administrator telah diberitahu tentang error ini.</p>
-<p><a href="/">Kembali ke Home</a></p>
-{% endblock %}
+<div class="container">
+    <div class="px-4 py-5 my-5 text-center">
+      <h1 class="display-1 text-muted">500</h1>
+      <h1 class="display-5 fw-light mt-5 text-muted">Server Error</h1>
+      <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4"></p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+          <button type="button" onClick="history.back()" class="btn btn-primary btn-lg px-4 gap-3"><i class="bi bi-arrow-return-left me-2"></i>kembali</button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4"><i class="bi bi-cup-hot me-2"></i>Home</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
