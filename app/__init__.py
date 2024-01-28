@@ -220,13 +220,6 @@ def create_app(config_class=Config):
         token = basic_auth.current_user().get_token()
         return jsonify({'token': token})
         
-    @app.route('/map')
-    def map():
-        t = None
-        if current_user.is_authenticated and current_user.tenant:
-            t = current_user.tenant
-        return render_template('map.html')
-
     @app.route('/tv')
     def tv():
         t = None

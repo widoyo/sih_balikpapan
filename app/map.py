@@ -13,7 +13,7 @@ def before_request():
         current_user.last_seen = datetime.utcnow()
         current_user.save()
 
-@bp.route('map')
+@bp.route('/')
 def index():
     center_map = "-1.4775533,116.4311507"
     if current_user.tenant:
