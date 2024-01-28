@@ -336,11 +336,11 @@ class Daily(db.Model):
             return []
         
         resolusi = 1
-        tinggi_sonar = 10000
+        tinggi_sonar = 1000
         try:
             logger = Logger.get(sn=self.sn)
-            resolusi = logger.son_res
-            tinggi_sonar = logger.ting_son
+            resolusi = logger.son_res or 1
+            tinggi_sonar = logger.ting_son or 1000
         except:
             pass
         data = [[(datetime.datetime.fromtimestamp(d['sampling']), (tinggi_sonar - d['distance'] * resolusi)/100) for d in json.loads(self.content) if datetime.datetime.fromtimestamp(d['sampling']).hour ==h] for h in range(0, 24)]
