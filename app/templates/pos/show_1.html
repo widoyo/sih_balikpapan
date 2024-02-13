@@ -109,7 +109,7 @@
       label: 'Curah Hujan/jam',
       backgroundColor: 'rgb(0,191,255)',
       borderColor: 'rgb(255, 99, 132)',
-      data: [{% for s, r in hourlyrain.items() %}{{ r.0 * 0.2}}, {% endfor %}],
+      data: [{% for s, r in hourlyrain.items() %}{{ r.0 * pos.logger_set[0].tipp_fac}}, {% endfor %}],
       yAxisID: 'yrain'
     },
     {

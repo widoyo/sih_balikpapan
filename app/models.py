@@ -104,6 +104,12 @@ class Tenant(db.Model):
         
         return tgl
     
+    def logger_aktif(self, tgl=datetime.date.today()):
+        sns = [l.sn for l in self.logger_set]
+        rst = Daily.select().where(Daily.sn.in_(sns), Daily.sampling==tgl)
+        ret = {'number': len(sns), 'up': len(rst)}
+        return ret
+    
 class Das(db.Model):
     nama = pw.CharField(max_length=35, unique=True)
     tenant = pw.ForeignKeyField(Tenant)
