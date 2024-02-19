@@ -39,5 +39,5 @@ def run_daemon():
     
 if __name__ == '__main__':
     app = create_app()
-    logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
+    logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.INFO)
     run_daemon()

@@ -11,10 +11,9 @@
           </h5>
         </div>
         <div class="card-body">
-          {{ curahhujan|length }}
           {% if curahhujan %}
           {% for h in curahhujan %}
-          <li>{{ h.sn }} {{ h.sampling }}</li>
+          <li><a href="/pos/{{ h.location.id }}">{{ h.location.nama }}</a> <span class="ps-3 pe-3 text-{% if h.rain()[0] > 100 %}danger{% elif h.rain()[0] > 50 %}warning{% elif h.rain()[0] > 20 %}text-yellow-500{% else %}success{% endif %}">Hujan Ringan</span> {{ "%.1f" % h.rain()[0] }} mm</li>
           {% endfor %}
           {% else %}
           <p class="text-center py-2"><i>Tidak ada hujan <b>hari ini</b></i></p>

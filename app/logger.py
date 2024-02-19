@@ -46,6 +46,8 @@ def show(sn):
         for r in json.loads(daily.content):
             r['sampling'] = datetime.datetime.fromtimestamp(r['sampling'])
             periodik.append(r)
+        sp = sorted(periodik, key=lambda x: x['sampling'])
+        periodik = sp
     except:
         pass
     next_s = sampling + datetime.timedelta(days=1)
