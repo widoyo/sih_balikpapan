@@ -33,7 +33,7 @@
             <tr>
               <td>{{ d['sampling'].strftime("%H:%M") }}</td>
               <td>{{ d['tick'] }}</td>
-              <td>{{ d['tick'] * logger.tipp_fac }}</td>
+              <td>{% if logger.tipp_fac %}{{ d['tick'] * logger.tipp_fac }}{% else %}{{ d['tick'] * 0.2 }}{% endif %}</td>
               <td>{{ d['battery'] }}</td>
               <td>{{ d['signal_quality']}}</td>
             </tr>
