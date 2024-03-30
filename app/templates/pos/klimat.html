@@ -6,11 +6,11 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/">Home</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Pos Curah Hujan</li>
-          <li class="breadcrumb-item"><a href="/map/?show=ch">Peta</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Pos Klimatologi</li>
+          <li class="breadcrumb-item"><a href="/map/?show=klimat">Peta</a></li>
         </ol>
       </nav>
-      <h1>Pos Curah Hujan <span class="fw-lighter">({{ poses|length }})</span><a href="../add?tipe=1" class="ms-5 text-muted fw-light fs-6">Tambah Pos</a></h1>
+      <h1>Pos Klimatologi <span class="fw-lighter">({{ poses|length }})</span><a href="../add?tipe=4" class="ms-5 text-muted fw-light fs-6">Tambah Pos</a></h1>
     </div>
   </div>
   <div class="row mb-4">
@@ -43,7 +43,7 @@
     {% for p in poses %}
     <tr>
       <td>{{ loop.index }}</td>
-      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/pch/{{p['pch'].id}}-{{p['pch'].nama}}/{{ tgl.strftime('%Y/%m')}}">{{ p['pch'].nama }}</a></td>
+      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{p['pch'].id}}-{{p['pch'].nama}}/{{ tgl.strftime('%Y/%m')}}">{{ p['pch'].nama }}</a></td>
       {% if not p['pch'].logger_set|length %}
       <td colspan="5">Tidak ada primaBot di PCH ini, <a href="/logger">pasangkan</a>.</td>
       {% else %}

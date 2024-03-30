@@ -15,7 +15,6 @@ def before_request():
 
 @bp.route('/')
 def index():
-    center_map = "-1.4775533,116.4311507"
-    if current_user.tenant:
-        center_map = current_user.tenant.center_map
-    return render_template('map.html', center_map=center_map)
+    pchs = [l for l in current_user.tenant.location_set if l.ll is not None and l.tipe in ('1', '4')]
+    pdas = [l for l in current_user.tenant.location_set if l.ll is not None and l.tipe in ('2', '4')]
+    return render_template('map.html', pchs=pchs, pdas=pdas)

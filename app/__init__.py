@@ -135,7 +135,12 @@ def create_app(config_class=Config):
         new_ws.save()
         return redirect('/pos')
         
-    @app.route('/download', methods=['GET', 'POST'])
+    @app.route('/download')
+    @login_required
+    def download_log():
+        return render_template('download_log.html')
+    
+    @app.route('/ddownload', methods=['GET', 'POST'])
     @login_required
     def data_download():
         form = DataDownloadForm()

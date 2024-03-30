@@ -320,8 +320,8 @@ def register(app):
         except Logger.DoesNotExits:
             logger = None
         t,b = bl.split('-')
-        bulan = datetime(int(t), int(b), 1, 7).astimezone(pytz.timezone(tz))
-        _sta = bulan
+        bulan = datetime(int(t), int(b), 1).astimezone(pytz.timezone(tz))
+        _sta = bulan.replace(hour=7)
         # _sta = 1648767600
         _end = (bulan + timedelta(days=32)).replace(day=1, hour=6, minute=55)
         today = datetime.now().astimezone(tz=pytz.timezone(tz))
@@ -396,6 +396,8 @@ def register(app):
         # kemas output ke file
         fname = 'pbot/p_{lokasi}_{sn}_{blth}.csv'.format(lokasi=nama_lokasi, sn=sn, blth=bulan.strftime('%b%Y'))
         note = '{} - {}\n'.format(nama_lokasi, sn)
+
+        newdf = pd.DataFrame()
 
         if logger.tipe == 'arr':        
             # Nambahi catatan untuk ARR

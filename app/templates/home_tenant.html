@@ -13,7 +13,8 @@
         <div class="card-body">
           {% if curahhujan %}
           {% for h in curahhujan %}
-          <li><a href="/pos/{{ h.location.id }}">{{ h.location.nama }}</a> <span class="ps-3 pe-3 text-{% if h.rain()[0] > 100 %}danger{% elif h.rain()[0] > 50 %}warning{% elif h.rain()[0] > 20 %}text-yellow-500{% else %}success{% endif %}">Hujan Ringan</span> {{ "%.1f" % h.rain()[0] }} mm</li>
+          <li>{% if h.location %}<a href="/pos/{{ h.location.id }}">{{ h.location.nama }}</a>{% else %}{{ h.logger.sn }}{% endif %} 
+            <span class="ps-3 pe-3 text-{% if h.rain()[0] > 100 %}danger{% elif h.rain()[0] > 50 %}warning{% elif h.rain()[0] > 20 %}text-yellow-500{% else %}success{% endif %}">Hujan {% if h.rain()[0] > 100 %}Sangat Lebat{% elif h.rain()[0] > 50 %}Lebat{% elif h.rain()[0] > 20 %}Sedang{% else %}Ringan{% endif %}</span> {{ "%.1f" % h.rain()[0] }} mm</li>
           {% endfor %}
           {% else %}
           <p class="text-center py-2"><i>Tidak ada hujan <b>hari ini</b></i></p>

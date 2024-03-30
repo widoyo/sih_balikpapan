@@ -117,8 +117,23 @@
     <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
    crossorigin=""></script>
-   <script>      
-        var mymap = L.map('mymap').setView([{{current_user.tenant.center_map}}], 10);
+   <script>
+      let pchs = [{% for p in pchs %}{name: '{{p.nama}}', ll: [{{ p.ll }}]},{% endfor %}];
+      let pdas = [{% for p in pdas %}{name: '{{p.nama}}', ll: [{{ p.ll }}]},{% endfor %}];
+      let map = L.map('mymap');
+      let all_poses = L.featureGroup().addTo(map);
+      for (let i =0; i < pchs.length; i++) {
+        let marker = new L.Marker(pchs[i].ll);
+        marker.bindPopup(pchs[i].name)
+        all_poses.addLayer(marker);
+      }
+      for (let i =0; i < pdas.length; i++) {
+        let marker = new L.Marker(pdas[i].ll, {title: pdas[i].name});
+        marker.bindPopup(pdas[i].name)
+        all_poses.addLayer(marker);
+      }
+
+      map.fitBounds(all_poses.getBounds());
 
         L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoid2lkb3lvIiwiYSI6ImNsNG1kcGFucTFicWUza21uMmJudTRkd3AifQ.-AhfUIYwXDOIwfD6nVFxxw', {
             maxZoom: 18,
@@ -126,7 +141,7 @@
                 '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
                 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
             id: 'mapbox/streets-v11'
-        }).addTo(mymap);
+        }).addTo(map);
         var arrIcon = L.icon({
             iconSize: [25, 41],
             iconAnchor: [12, 41],

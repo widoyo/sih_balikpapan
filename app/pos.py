@@ -1,11 +1,11 @@
+import json
 from datetime import datetime, timedelta
-import pytz, json
-from flask import Blueprint, request, render_template, redirect, flash, abort
+from flask import Blueprint, request, Response, render_template, redirect, flash, abort
 from flask_login import current_user, login_required
 from playhouse.flask_utils import get_object_or_404
 from peewee import Cast
 import pandas as pd
-from .models import Location, Das, Ws, Hourly, Logger, Daily
+from .models import Location, Das, Ws, DownloadLog, Logger, Daily
 from .forms import PosForm, UserForm, NoteForm
 
 bp = Blueprint('pos', __name__)
@@ -16,6 +16,17 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
         current_user.save()
+
+
+class DictObj:
+    def __init__(self, in_dict:dict):
+        assert isinstance(in_dict, dict)
+        for key, val in in_dict.items():
+            if isinstance(val, (list, tuple)):
+               setattr(self, key, [DictObj(x) if isinstance(x, dict) else x for x in val])
+            else:
+               setattr(self, key, DictObj(val) if isinstance(val, dict) else val)
+
 
 @bp.route('/pch/')
 @login_required
@@ -118,9 +129,9 @@ def edit(id):
     return render_template('pos/edit.html', pos=pos)
 
 
-@bp.route('/<id>/<int:tahun>/<int:bulan>')
+@bp.route('/pch/<id>/<int:tahun>/<int:bulan>', methods=['GET', 'POST'])
 @login_required
-def show_sebulan(id, tahun, bulan):
+def show_pch_sebulan(id, tahun, bulan):
     bulan = datetime(tahun, bulan, 1)
     sbl = bulan - timedelta(days=1)
     ssd = bulan + timedelta(days=32)
@@ -130,22 +141,72 @@ def show_sebulan(id, tahun, bulan):
         end_bl = (ssd.replace(day=1) - timedelta(days=1)).day
     id = int(id.split('-')[0])
     pos = get_object_or_404(Location, (Location.id == id))
+    if pos.tipe not in ('1', '2', '3'):
+        return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
+
+    if request.method == 'POST':
+        rain_sebulan_per_jam = []
+        for d in Daily.select().where(
+            Daily.location_id==id, Daily.sampling.year==bulan.year, 
+            Daily.sampling.month==bulan.month):
+            rain_sebulan_per_jam += [(k.strftime('%Y-%m-%d %H:%M'), v[0], v[1]) for k, v in d.hourly_rain().items()]
+        csv_data = 'Waktu,Hujan,Banyak Data\n'
+        for r in rain_sebulan_per_jam:
+            csv_data += ','.join(map(str, r))
+            csv_data += '\n'
+            
+        resp = Response(csv_data, content_type='text/csv')
+        resp.headers['Content-Disposition'] = "attachment; filename={}_{}.csv".format(pos.nama.replace(' ', '_'), bulan.strftime('%Y-%m_'))
+        dl = DownloadLog.create(location=pos, 
+                         sampling=bulan.strftime('%Y-%m'),
+                         username=current_user.username,
+                         size=len(rain_sebulan_per_jam))
+        return resp
+
     data_sebulan = dict([((bulan + timedelta(days=i)).date(), (0, 0, 0, 0)) for i in range(0, end_bl)])
     data_sebulan.update(dict([(d.sampling, (d.rain()[0], d.rain()[1], d.m_rain, d)) for d in Daily.select().where(
         Daily.location_id==id, Daily.sampling.year==bulan.year, 
         Daily.sampling.month==bulan.month)]))
     out = [(k, v[0], v[1], v[2], v[3]) for k, v in data_sebulan.items()]
     
-    if pos.tipe not in ('1', '2', '3'):
-        return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
-    return render_template('pos/show_sebulan_{}.html'.format(pos.tipe), 
+    return render_template('pos/show_sebulan_1.html'.format(pos.tipe), 
                            pos=pos, bln=bulan, data_sebulan=out,
                            _bln=sbl, bln_=ssd)
 
 
-@bp.route('/<id>/<int:tahun>')
+@bp.route('/pda/<id>/<int:tahun>/<int:bulan>', methods=['GET', 'POST'])
 @login_required
-def show_setahun(id, tahun):
+def show_pda_sebulan(id, tahun, bulan):
+    bulan = datetime(tahun, bulan, 1)
+    sbl = bulan - timedelta(days=1)
+    ssd = bulan + timedelta(days=32)
+    if bulan.strftime("%Y%m") == datetime.today().strftime("%Y%m"):
+        end_bl = datetime.today().day
+    else:
+        end_bl = (ssd.replace(day=1) - timedelta(days=1)).day
+    id = int(id.split('-')[0])
+    pos = get_object_or_404(Location, (Location.id == id))
+    if pos.tipe not in ('1', '2', '3'):
+        return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
+
+    data_sebulan = dict([((bulan + timedelta(days=i)).date(), ()) for i in range(0, end_bl)])
+    data_sebulan.update(dict([(d.sampling, d) for d in Daily.select().where(
+        Daily.location_id==id, Daily.sampling.year==bulan.year, 
+        Daily.sampling.month==bulan.month)]))
+    out = [k for k in data_sebulan]
+    
+    if request.method == 'POST':
+        return "Ok end_bl: {}".format(end_bl)
+    
+    return render_template('pos/show_sebulan_2.html'.format(pos.tipe), 
+                           pos=pos, bln=bulan, data_sebulan=out,
+                           _bln=sbl, bln_=ssd)
+
+
+
+@bp.route('/pda/<id>/<int:tahun>')
+@login_required
+def show_pda_setahun(id, tahun):
     id = int(id.split('-')[0])
     thn = datetime.today().replace(year=tahun)
     thn_ = thn + timedelta(days=366)
@@ -156,9 +217,83 @@ def show_setahun(id, tahun):
     return render_template('pos/show_setahun_{}.html'.format(pos.tipe), 
                            pos=pos, thn=thn, _thn=_thn, thn_=thn_)
 
-@bp.route('/<id>/')
+
+@bp.route('/pch/<id>/<int:tahun>')
 @login_required
-def show(id):
+def show_pch_setahun(id, tahun):
+    id = int(id.split('-')[0])
+    thn = datetime.today().replace(year=tahun)
+    thn_ = thn + timedelta(days=366)
+    _thn = thn - timedelta(days=1)
+    pos = get_object_or_404(Location, (Location.id == id))
+    if pos.tipe not in ('1', '2', '3'):
+        return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
+    return render_template('pos/show_setahun_{}.html'.format(pos.tipe), 
+                           pos=pos, thn=thn, _thn=_thn, thn_=thn_)
+
+@bp.route('/pch/<id>/', methods=['GET', 'POST'])
+@login_required
+def show_pch(id):
+    sampling = request.args.get('s')
+    if sampling:
+        for sep in ['-', '/']:
+            if sep in sampling:
+                break
+    try:
+        tahun,bulan,tanggal = sampling.split(sep)
+    except:
+        tahun,bulan,tanggal = datetime.today().strftime('%Y/%m/%d').split('/')
+    tgl = datetime(int(tahun), int(bulan), int(tanggal)).astimezone()
+    _sta = tgl.replace(hour=7).astimezone()
+    _end = (_sta + timedelta(days=1)).replace(hour=6, minute=55)
+    if _sta > _end:
+        _sta -= timedelta(days=1)
+    if _end > datetime.now().astimezone():
+        _end = datetime.now().astimezone()
+    id = int(id.split('-')[0])
+    pos = get_object_or_404(Location, (Location.id == id))
+    if pos.tipe not in ('1', '2', '3'):
+        return "Error: Data tipe pos {}: {}".format(pos.nama, pos.tipe)
+    
+    thisday_ = Daily.select().where((Daily.location_id==id) & (Daily.sampling==_sta.date())).first()
+
+    if request.method == 'POST':
+        logger = Logger.get(sn=thisday_.sn)
+        data_hujan = [(datetime.fromtimestamp(c['sampling']).strftime('%Y-%m-%d %H:%M'), c['tick']*logger.tipp_fac) for c in json.loads(thisday_.content)]
+        data_hujan.sort(key=lambda x: x[0])
+        out = '"Tanggal Jam", Hujan\n'
+        for d in data_hujan:
+            out += '"{}", {}\n'.format(d[0], d[1])
+
+        resp = Response(out, content_type='text/csv')
+        resp.headers['Content-Disposition'] = "attachment; filename={}_{}.csv".format(pos.nama.replace(' ', '_'), thisday_.sampling.strftime('%Y-%m-%d_'))
+        dl = DownloadLog.create(location=pos, 
+                         sampling=thisday_.sampling.strftime('%Y-%m-%d'),
+                         username=current_user.username,
+                         size=len(data_hujan))
+        return resp
+    
+    num_data_ = 0
+    hourlyrain_  = {}
+    rain_ = 0
+    m_rain_ = 0
+    logger = None
+    if thisday_:
+        hourlyrain_ = thisday_.hourly_rain()
+        num_data_ = thisday_.rain()[1]
+        rain_ = thisday_.rain()[0]
+        m_rain_ = thisday_.m_rain
+        logger = Logger.get(sn=thisday_.sn)
+    note_form = NoteForm(object_type='location', object_id=pos.id)
+    return render_template('pos/show_1.html'.format(pos.tipe), pos=pos, 
+                           tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), 
+                           note_form=note_form, m_rain=m_rain_, 
+                           hourlyrain=hourlyrain_, num_data=num_data_, rain=rain_,
+                           logger=logger)
+
+@bp.route('/pda/<id>/')
+@login_required
+def show_pda(id):
     sampling = request.args.get('s')
     if sampling:
         for sep in ['-', '/']:
@@ -194,13 +329,13 @@ def show(id):
         wlevels = thisday_.wlevels()
         logger = Logger.get(sn=thisday_.sn)
     note_form = NoteForm(object_type='location', object_id=pos.id)
-    return render_template('pos/show_{}.html'.format(pos.tipe), pos=pos, 
+    return render_template('pos/show_2.html'.format(pos.tipe), pos=pos, 
                            tgl=tgl, _tgl=tgl - timedelta(days=1), tgl_= tgl + timedelta(days=1), 
-                           note_form=note_form, show=show, m_rain=m_rain_, 
+                           note_form=note_form, m_rain=m_rain_, 
                            hourlyrain=hourlyrain_, num_data=num_data_, rain=rain_,
-                           wlevels=wlevels, logger=logger)
+                           logger=logger)
 
-    
+
 @bp.route('/<id>/pd')
 @login_required
 def show_with_pd(id):

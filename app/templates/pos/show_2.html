@@ -13,16 +13,11 @@
       </nav>
       <h2><span class="d-inline d-md-none"><a href="/pos">&larr;</a>&nbsp;</span>{{ pos.nama }} <span class="fs-6 badge bg-danger rounded-pill">PDA</span></h2>
       <span class="small">Desa/Kel: {{ pos.desa or '-'}} Kec: {{ pos.kecamatan or '-'}} Kab/Kot: {{ pos.kabupaten or '-'}}</span>
-      <div class="btn-group float-end" role="group">
-        <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-primary">Sehari</a>
-        <a href="{{ url_for('pos.show', id=pos.id) }}{{ tgl.year }}/{{ tgl.month }}" class="btn btn-outline-primary">Sebulan</a>
-        <a href="{{ url_for('pos.show', id=pos.id) }}{{ tgl.year }}" class="btn btn-outline-primary">Setahun</a></label>
-      </div>
     </div>
   </div>
   <div class="row">
     <div class="col-sm-8">
-      <h2 class="text-center fs-4"><a href="{{ url_for('pos.show', id=pos.id) }}?s={{_tgl.strftime('%Y/%m/%d') }}" class="me-5 btn btn-light"><i class="bi bi-chevron-left"></i></a> {{ tgl.strftime('%d %b %Y') }} <a href="{{ url_for('pos.show', id=pos.id)}}?s={{tgl_.strftime('%Y/%m/%d') }}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
+      <h2 class="text-center fs-4"><a href="{{ url_for('pos.show_pda', id=pos.id) }}?s={{_tgl.strftime('%Y/%m/%d') }}" class="me-5 btn btn-light"><i class="bi bi-chevron-left"></i></a> {{ tgl.strftime('%d %b %Y') }} <a href="{{ url_for('pos.show_pda', id=pos.id)}}?s={{tgl_.strftime('%Y/%m/%d') }}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
       <canvas id="chart_hujan_hari"></canvas>
     </div>
     <div class="col-sm-4">

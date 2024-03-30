@@ -13,32 +13,42 @@
     <h2>{{ pos.nama }} <span class="fs-6 badge bg-danger rounded-pill">PDA</span></h2>
       <span class="small">Desa/Kel: {{ pos.desa or '-'}} Kec: {{ pos.kecamatan or '-'}} Kab/Kot: {{ pos.kabupaten or '-'}}</span>
       <div class="btn-group float-end" role="group">
-        <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>
-        <a href="{{ url_for('pos.show', id=pos.id) }}" class="btn btn-primary">Sebulan</a>
-        <a href="{{ url_for('pos.show_setahun', id=pos.id, tahun=bln.year) }}" class="btn btn-outline-primary">Setahun</a></label>
+        <a href="{{ url_for('pos.show_pda', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>
+        <a href="{{ url_for('pos.show_pda_sebulan', id=pos.id, tahun=bln.year, bulan=bln.month) }}" class="btn btn-primary">Sebulan</a>
+        <a href="{{ url_for('pos.show_pda_setahun', id=pos.id, tahun=bln.year) }}" class="btn btn-outline-primary">Setahun</a></label>
       </div>
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
+    <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_pda_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_pda_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
       <canvas id="chart_wlevel_hari"></canvas>
     </div>
     <div class="col-sm-4">
     <table class="table">
       <tr>
         <th rowspan="2">Tgl</th>
-        <th colspan="2">J 6</th>
-        <th colspan="2">J 12</th>
-        <th colspan="2">J 18</th>
+        <th class="text-center" colspan="2">Pagi</th>
+        <th class="text-center" colspan="2">Siang</th>
+        <th class="text-center" colspan="2">Sore</th>
       </tr>
       <tr>
-        <td>T</td>
-        <td>M</td>
-        <td>T</td>
-        <td>M</td>
-        <td>T</td>
-        <td>M</td>
+        <td class="text-center">T</td>
+        <td class="text-center">M</td>
+        <td class="text-center">T</td>
+        <td class="text-center">M</td>
+        <td class="text-center">T</td>
+        <td class="text-center">M</td>
       </tr>
+      {% for wl in data_sebulan %}
+      <tr>
+        <td>{{ wl }}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      {% endfor %}
     </table>      
       <p>Rerata</p>
       <p>Download</p>

@@ -45,7 +45,7 @@
     {% for p in poses %}
     <tr>
       <td>{{ loop.index }}</td>
-      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/{{ p.pda.id }}-{{p.pda.nama}}?s={{ tgl.strftime('%Y/%m/%d') }}">{{ p.pda.nama }}</a></td>
+      <td style="max-width: 200px;" class="text-truncate"><a href="/pos/pda/{{ p.pda.id }}-{{p.pda.nama}}?s={{ tgl.strftime('%Y/%m/%d') }}">{{ p.pda.nama }}</a></td>
       {% if not p.pda.logger_set|length %}
       <td colspan="6">Tidak ada primaBot di PDA ini, <a href="/logger">pasangkan</a>.</td>
       {% else %}

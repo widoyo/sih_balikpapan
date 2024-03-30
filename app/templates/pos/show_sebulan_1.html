@@ -13,14 +13,14 @@
 <h2>{{ pos.nama }} <span class="fs-6 badge bg-primary rounded-pill">PCH</span></h2>
 <span class="small">Desa/Kel: {{ pos.desa or '-'}} Kec: {{ pos.kecamatan or '-'}} Kab/Kot: {{ pos.kabupaten or '-'}}</span>
       <div class="btn-group float-end" role="group">
-        <a href="{{ url_for('pos.show', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>
-        <a href="{{ url_for('pos.show', id=pos.id) }}" class="btn btn-primary">Sebulan</a>
-        <a href="{{ url_for('pos.show_setahun', id=pos.id, tahun=bln.year) }}" class="btn btn-outline-primary">Setahun</a></label>
+        <a href="{{ url_for('pos.show_pch', id=(pos.id ~ '-' ~ pos.nama))}}" class="btn btn-outline-primary">Sehari</a>
+        <a href="#" class="btn btn-primary">Sebulan</a>
+        <a href="{{ url_for('pos.show_pch_setahun', id=pos.id, tahun=bln.year) }}" class="btn btn-outline-primary">Setahun</a></label>
       </div>
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
+    <div class="col-sm-8"><h2 class="text-center"><a href="{{ url_for('pos.show_pch_sebulan', id=pos.id, tahun=_bln.year, bulan=_bln.month)}}" class="btn btn-light me-5"><i class="bi bi-chevron-left"></i></a>{{bln.strftime('%b %Y')}} <a href="{{ url_for('pos.show_pch_sebulan', id=pos.id, tahun=bln_.year, bulan=bln_.month)}}" class="btn btn-light ms-5"><i class="bi bi-chevron-right"></i></a></h2>
       <canvas id="chart_hujan_hari"></canvas>
       <p>Skala Curah Hujan / hari</p>
       <table class="table" style="max-width: 300px;">
@@ -39,8 +39,8 @@
       </table>
     </div>
     <div class="col-sm-4">
-      <h4>Curah Hujan {{bln.strftime('%b %Y')}} <span class="fw-light fs-5">({{ data_sebulan|length }} hari)</span></h4>
-      <table class="table">
+      <h4 class="mt-5 mt-sm-0">Curah Hujan {{bln.strftime('%b %Y')}} <span class="fw-light fs-5">({{ data_sebulan|length }} hari)</span></h4>
+      <table class="table mb-3 mb-sm-0">
         <tr>
           <th>&nbsp;</th>
           <th>CH<br><span style="line-height:0.8em;font-size:8pt;font-weight:300">(mm)</span></th>
@@ -66,6 +66,13 @@
           <td class="text-end">0</td>
         </tr>
       </table>
+      <div class="mt-5">
+      {% if pos.is_download_enable %}
+      <form action="{{ url_for('pos.show_pch_sebulan', id=pos.id, tahun=bln.year, bulan=bln.month)}}" method="POST"><input type="submit" class="btn btn-outline-primary btn-sm" value="Download"> <span class="small text-muted">Data bulan ini per jam</span></form>
+      {% else %}
+      <a class="btn btn-outline-primary btn-sm disabled" aria-disabled="true">Download</a> <span class="small text-muted">sudah didownload X jam lalu</span>
+      {% endif %}
+      </div>
       <table class="table table-striped" id="daily">
         <thead>
           <tr>
@@ -79,7 +86,7 @@
         <tbody>
           {% for t in data_sebulan %}
           <tr>
-            <td><a class="small" href="/pos/{{ pos.id}}-{{ pos.nama}}?s={{ t.0.strftime('%Y-%m-%d')}}">{{ t.0 }}</a></td>
+            <td><a class="small" href="/pos/pch/{{ pos.id}}-{{ pos.nama}}?s={{ t.0.strftime('%Y-%m-%d')}}">{{ t.0 }}</a></td>
             <td class="text-end t-rain" style="background-color: #0dcaf0;">{% if t.1 %}{{ "%0.1f" % t.1 }}{% else %}-{% endif %}</td>
             <td class="text-end">{% if t.2 %}{{ '%0.0f'%((t.2/288) * 100) }}%{% else %}-{% endif %}</td>
             <td class="text-end m-rain" style="background-color: #d1e7dd;">
@@ -211,14 +218,14 @@
               xMin: 9,
               xMax: 9,
               borderColor: 'rgba(255, 99, 132, 0.1)',
-              borderWidth: 2,
+              borderWidth: 30,
             },
             vline2: {
               type: 'line',
               xMin: 19,
               xMax: 19,
               borderColor: 'rgba(255, 99, 132, 0.1)',
-              borderWidth: 2,
+              borderWidth: 30,
             },
             label5: {
               type: 'label',

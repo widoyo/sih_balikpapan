@@ -14,7 +14,7 @@ from playhouse.sqlite_ext import JSONField
 
 db = FlaskDB()
 
-TIPE_POS = [(1, 'PCH'), (2, 'PDA'), (3, 'Klimatologi')]
+TIPE_POS = [(1, 'PCH'), (2, 'PDA'), (3, 'Klimatologi'), (4, 'PCH-PDA')]
 TIPE_POS_COLOR = [(1, 'primary'), (2, 'danger'), (3, 'success')]
 
 class Raw(db.Model):
@@ -124,6 +124,7 @@ class Das(db.Model):
     def from_dict(self, data, new=False):
         self.nama = data
 
+
 class Ws(db.Model):
     nama = pw.CharField(max_length=35, unique=True)
     tenant = pw.ForeignKeyField(Tenant)
@@ -131,6 +132,7 @@ class Ws(db.Model):
     modified_at = pw.DateTimeField(null=True)
     alur = pw.TextField(null=True)
     
+
 class Location(db.Model):
     nama = pw.CharField(max_length=35)
     ll = pw.CharField(max_length=60, null=True)
@@ -164,11 +166,30 @@ class Location(db.Model):
     
     def get_sehari(self, day=datetime.date.today):
         print(day)
-        
+    
+    @property    
+    def is_download_enable(self):
+        return True
+    
     class Meta:
         order_by = ['nama']
         
     
+class DownloadLog(db.Model):
+    location = pw.ForeignKeyField(Location)
+    sampling = pw.CharField(max_length=32) # 2024-03 (sebulan) ATAU 2024-03-28 (sehari)
+    size = pw.IntegerField(default=0)
+    waktu = pw.DateTimeField(default=datetime.datetime.now)
+    username = pw.CharField(max_length=50)
+    
+    @property
+    def _str(self):
+        return '{} - {} - {} - {} - {}'.format(self.location.nama, self.sampling, self.size, self.waktu, self.username)
+    
+    class Meta:
+        order_by = ['waktu']
+
+
 class Logger(db.Model):
     sn = pw.CharField(max_length=10)
     location = pw.ForeignKeyField(Location, null=True)
@@ -338,7 +359,7 @@ class Daily(db.Model):
     
     def wlevels(self):
         '''return pagi, siang sore'''
-        if 'distance' not in self.content:
+        if self.content and 'distance' not in self.content:
             return []
         
         resolusi = 1
