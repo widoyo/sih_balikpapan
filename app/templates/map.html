@@ -11,8 +11,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
     integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
     crossorigin=""/>
-    <title>prinus</title>
+    <title>Peta Lokasi Pos Hidrologi</title>
     <style>
+      img.pda { filter: hue-rotate(120deg); }
+
       #mymap {height: 100vh; width: 100%}
       .go-up {
         display: inline-block;
@@ -118,20 +120,36 @@
    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
    crossorigin=""></script>
    <script>
+      const pdaIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
       let pchs = [{% for p in pchs %}{name: '{{p.nama}}', ll: [{{ p.ll }}]},{% endfor %}];
       let pdas = [{% for p in pdas %}{name: '{{p.nama}}', ll: [{{ p.ll }}]},{% endfor %}];
       let map = L.map('mymap');
       let all_poses = L.featureGroup().addTo(map);
+      let listPch = [];
+      let listPda = [];
       for (let i =0; i < pchs.length; i++) {
-        let marker = new L.Marker(pchs[i].ll);
+        let marker = L.marker(pchs[i].ll);
         marker.bindPopup(pchs[i].name)
         all_poses.addLayer(marker);
+        listPch.push(marker);
       }
       for (let i =0; i < pdas.length; i++) {
-        let marker = new L.Marker(pdas[i].ll, {title: pdas[i].name});
+        let marker = L.marker(pdas[i].ll, {title: pdas[i].name, icon: pdaIcon});
         marker.bindPopup(pdas[i].name)
         all_poses.addLayer(marker);
+        listPda.push(marker);
       }
+
+      let posMap = {"Pos Curah Hujan": L.layerGroup(listPch), "Pos Duga Air": L.layerGroup(listPda)};
+
+      let layerControl = L.control.layers(null, posMap).addTo(map);
 
       map.fitBounds(all_poses.getBounds());
 
@@ -142,32 +160,6 @@
                 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
             id: 'mapbox/streets-v11'
         }).addTo(map);
-        var arrIcon = L.icon({
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41],
-            iconUrl: "https://bwssul2-gorontalo.net/img/marker/marker-icon-green.png",
-            shadowUrl: "https://bwssul2-gorontalo.net/img/marker/marker-shadow.png"
-        });
-        var awlrIcon = L.icon({
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41],
-            iconUrl: "https://bwssul2-gorontalo.net/img/marker/marker-icon-orange.png",
-            shadowUrl: "https://bwssul2-gorontalo.net/img/marker/marker-shadow.png"
-        });
-        var lokasi = [];
-        lokasi.forEach(e => {
-            var m = L.marker(e.ll);
-            m.bindTooltip(e.nama);
-            var icon = e.type == 'arr' ? arrIcon : awlrIcon;
-            var jenis = e.type == 'arr' ? 'curahhujan' : 'tma';
-            m.setIcon(icon);
-            m.bindPopup("<b><a href=/"+ jenis +"/" + e.id + ">" + e.nama + "</a></b>");
-            m.addTo(mymap);
-        });
     </script>
     </script>
   </body>
