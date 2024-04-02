@@ -26,7 +26,7 @@
         {% for logger in logger_list %}
           <tr>
             <td style="max-width: 150px;" class="text-truncate"><i class="bi bi-cpu me-1 {% if logger.tipe == 'arr' %}text-primary{% elif logger.tipe == 'awlr' %}text-danger{% endif %}"></i> <a href="{{ url_for('logger.show', sn=logger.sn) }}?s={{ sampling.strftime("%Y/%m/%d")}}">{{ logger.sn }}</a> 
-              <br>{% if logger.location %}<i class="bi bi-geo-alt me-1"></i> <a data-bs-toggle="tooltip" data-bs-title="{{ logger.location.nama }}" title="{{ logger.location.nama }}" href="{% if pos.location.tipe == '1' %}{{ url_for('pos.show_pch', id=logger.location.id) }}{%elif pos.location.tipe == '2' %}{{ url_for('pos.show_pda', id=logger.location.id) }}{% endif %}" class="text-muted fw-light" style="font-size:10pt">{{ logger.location.nama }}</a>{% else %}-{% endif %}
+              <br>{% if logger.location %}<i class="bi bi-geo-alt me-1"></i> <a data-bs-toggle="tooltip" data-bs-title="{{ logger.location.nama }}" title="{{ logger.location.nama }}" href="{% if logger.tipe == '1' %}{{ url_for('pos.show_pch', id=logger.location.id) }}{%elif logger.tipe == '2' %}{{ url_for('pos.show_pda', id=logger.location.id) }}{% endif %}" class="text-muted fw-light" style="font-size:10pt">{{ logger.location.nama }}</a>{% else %}-{% endif %}
             </td>
             {% for i in range(0, 24) %}
             <td class="num">{{ logger.sehat[i] or '-' }}</td>
