@@ -146,8 +146,21 @@
         all_poses.addLayer(marker);
         listPda.push(marker);
       }
+      const onEachFeature = (feature, layer) => {
+        let popUpContent = `<p>${feature.properties.TOPONIMI}</p>`;
+        layer.bindPopup(popUpContent);
+      }
+      let das = {{ dases[0].alur|safe}};
+      let layer_das = L.geoJSON(das, {onEachFeature: onEachFeature});
 
-      let posMap = {"Pos Curah Hujan": L.layerGroup(listPch), "Pos Duga Air": L.layerGroup(listPda)};
+      layer_das.addTo(map);
+      let lPch = L.layerGroup(listPch);
+      let lPda = L.layerGroup(listPda);
+      lPch.addTo(map);
+      lPda.addTo(map);
+
+      let posMap = {"Pos Curah Hujan": lPch, 
+      "Pos Duga Air": lPda, "DAS": layer_das};
 
       let layerControl = L.control.layers(null, posMap).addTo(map);
 

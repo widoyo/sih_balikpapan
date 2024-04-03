@@ -17,4 +17,5 @@ def before_request():
 def index():
     pchs = [l for l in current_user.tenant.location_set if l.ll is not None and l.tipe in ('1', '4')]
     pdas = [l for l in current_user.tenant.location_set if l.ll is not None and l.tipe in ('2', '4')]
-    return render_template('map.html', pchs=pchs, pdas=pdas)
+    dases = [d for d in current_user.tenant.das_set]
+    return render_template('map.html', pchs=pchs, pdas=pdas, dases=dases)
