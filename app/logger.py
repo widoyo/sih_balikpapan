@@ -45,16 +45,30 @@ def show(sn):
     try:
         for r in json.loads(daily.content):
             r['sampling'] = datetime.datetime.fromtimestamp(r['sampling'])
+            del r['up_since']
+            del r['time_set_at']
+            del r['device']
             periodik.append(r)
         sp = sorted(periodik, key=lambda x: x['sampling'])
         periodik = sp
     except:
         pass
+    cols = []
+    if len(periodik):
+        cols = ['sampling'] + [c for c in periodik[0].keys() if c != 'sampling']
     next_s = sampling + datetime.timedelta(days=1)
     prev_s = sampling - datetime.timedelta(days=1)
+    
+    ctx = {
+        'logger': logger,
+        'periodik': periodik,
+        'sampling': sampling,
+        'next_s': next_s,
+        'prev_s': prev_s,
+        'cols': cols,
+    }
 
-    return render_template('logger/show.html', logger=logger, periodik=periodik,
-                           sampling=sampling, next_s=next_s, prev_s=prev_s)
+    return render_template('logger/show.html', ctx=ctx)
 
 @bp.route('/sehat')
 @login_required
