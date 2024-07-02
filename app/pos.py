@@ -148,7 +148,7 @@ def show_pch_sebulan(id, tahun, bulan):
         rain_sebulan_per_jam = []
         for d in Daily.select().where(
             Daily.location_id==id, Daily.sampling.year==bulan.year, 
-            Daily.sampling.month==bulan.month):
+            Daily.sampling.month==bulan.month).order_by(Daily.sampling):
             rain_sebulan_per_jam += [(k.strftime('%Y-%m-%d %H:%M'), v[0], v[1]) for k, v in d.hourly_rain().items()]
         csv_data = 'Waktu,Hujan,Banyak Data\n'
         for r in rain_sebulan_per_jam:

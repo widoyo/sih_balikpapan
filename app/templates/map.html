@@ -128,15 +128,15 @@
         popupAnchor: [1, -34],
         shadowSize: [41, 41]
       });
-      let pchs = [{% for p in pchs %}{name: '{{p.nama}}', ll: [{{ p.ll }}]},{% endfor %}];
-      let pdas = [{% for p in pdas %}{name: '{{p.nama}}', ll: [{{ p.ll }}]},{% endfor %}];
+      let pchs = [{% for p in pchs %}{name: '{{p.nama}}', ll: [{{ p.ll }}], elev: {{ p.elevasi }}},{% endfor %}];
+      let pdas = [{% for p in pdas %}{name: '{{p.nama}}', ll: [{{ p.ll }}], elev: {{ p.elevasi }}},{% endfor %}];
       let map = L.map('mymap');
       let all_poses = L.featureGroup().addTo(map);
       let listPch = [];
       let listPda = [];
       for (let i =0; i < pchs.length; i++) {
         let marker = L.marker(pchs[i].ll);
-        marker.bindPopup(pchs[i].name)
+        marker.bindPopup(pchs[i].name);
         all_poses.addLayer(marker);
         listPch.push(marker);
       }
