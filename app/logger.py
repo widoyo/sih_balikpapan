@@ -77,7 +77,6 @@ def download(sn):
                 row = row + ',{},{},{},{}'.format(tma, d['distance'], d['sensor_height'], d['sensor_resolution'])
             if 'alarm' in sample[0]:
                 row = row + ',{}'.format(d['alarm'])
-                out[samp.strftime('%Y-%m-%d %H:%M')] = row
             if 'alarm_time' in d:
                 at = datetime.datetime.fromtimestamp(d['alarm_time'])
                 row = row + ',{}'.format(at.strftime('%Y-%m-%d %H:%M:%S'))
