@@ -69,12 +69,12 @@ def download(sn):
                 else: 
                     rain52 += d['tick']
                     rain5 = rain52
-                row = ',{},{},{},{}'.format(d['tick']*d['tipping_factor'], rain5*d['tipping_factor'], d['tick'], d['tipping_factor'])
+                row = ',{:.1f},{:.1f},{},{:.1f}'.format(d['tick']*d['tipping_factor'], rain5*d['tipping_factor'], d['tick'], d['tipping_factor'])
             if 'wind_speed' in sample[0]:
                 row = row + ',{}'.format(d['wind_speed'])
             if 'distance' in sample[0]:
                 tma = d['sensor_height'] - (d['distance'] * d['sensor_resolution'])
-                row = row + ',{},{},{},{}'.format(tma, d['distance'], d['sensor_height'], d['sensor_resolution'])
+                row = row + ',{:.0f},{:.0f},{:.0f},{:.1f}'.format(tma, d['distance'], d['sensor_height'], d['sensor_resolution'])
             if 'alarm' in sample[0]:
                 row = row + ',{}'.format(d['alarm'])
             if 'alarm_time' in d:
