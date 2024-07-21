@@ -58,7 +58,9 @@
          {% elif ctx.logger.tipe == 'awlr'%}
          AWLR: Tinggi sonar, resolusi sonar<br>
          {% endif %}
-        
+        <div class="mt-5">
+          <a href="{{ url_for('logger.download', sn=ctx.logger.sn ) }}?s={{ ctx.sampling.strftime('%Y-%m-%d')}}" class="btn btn-outline-primary btn-sm">Download</a> data {{ ctx.sampling.strftime('%b %Y') }}
+        </div>
         
       </div>
     </div>
